@@ -136,7 +136,9 @@ public class MainActivity extends AppCompatActivity {
             // Return a PlaceholderFragment (defined as a static inner class below).
             switch(position){
                 case 0:
-                    return
+                    return GoogleMapsFragment.newInstance();
+                case 1:
+                    return ProfileFragment.newInstance();
             }
             return PlaceholderFragment.newInstance(position + 1);
         }
