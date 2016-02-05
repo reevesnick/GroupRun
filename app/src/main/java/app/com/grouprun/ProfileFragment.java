@@ -1,12 +1,14 @@
 package app.com.grouprun;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 
 /**
@@ -28,7 +30,7 @@ public class ProfileFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
-
+    private Button button;
     public ProfileFragment() {
         // Required empty public constructor
     }
@@ -37,8 +39,6 @@ public class ProfileFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
      * @return A new instance of fragment ProfileFragment.
      */
     // TODO: Rename and change types and number of parameters
@@ -49,6 +49,20 @@ public class ProfileFragment extends Fragment {
 //        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    public void onViewCreated(View view, Bundle savedInstanceState){
+        super.onViewCreated(view,savedInstanceState);
+        button = (Button)view.findViewById(R.id.run_button);
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent toRunView = new Intent(getContext(), RunListViewActivity.class);
+                startActivity(toRunView);
+            }
+        });
+
     }
 
     @Override
@@ -64,7 +78,10 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+
+
         return inflater.inflate(R.layout.fragment_profile, container, false);
+
     }
 
     // TODO: Rename method, update argument and hook method into UI event
