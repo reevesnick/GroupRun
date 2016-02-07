@@ -5,4 +5,7 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_google_maps">Map</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="google_app_id">AIzaSyD4gMzJ5u5QsT-BzjkTbJ3oJQsM70U9p_A</string>
 </resources>
