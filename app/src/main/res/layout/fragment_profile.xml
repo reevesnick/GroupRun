@@ -2,30 +2,46 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:layout_weight="2"
+    android:weightSum="2"
     tools:context="app.com.grouprun.ProfileFragment">
 
+
+    <RelativeLayout
+       android:layout_width="match_parent"
+       android:layout_height="match_parent"
+       android:layout_weight="1">
+       <LinearLayout
+           android:layout_width="match_parent"
+           android:layout_height="match_parent">
+           <!--<de.hdodenhof.circleimageview.CircleImageView-->
+               <!--xmlns:app="http://schemas.android.com/apk/res-auto"-->
+               <!--android:id="@+id/profile_image"-->
+               <!--android:layout_width="96dp"-->
+               <!--android:layout_height="96dp"-->
+               <!--android:src="@drawable/me"-->
+               <!--app:civ_border_width="2dp"-->
+               <!--app:civ_border_color="#FF000000"/>-->
+
+       </LinearLayout>
+
+   </RelativeLayout>
+
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:weightSum="1"
-        android:orientation="horizontal"
-        >
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:weightSum="2"
+        android:layout_weight="1">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+
+
+        </RelativeLayout>
     </LinearLayout>
 
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:weightSum="1"
-        android:orientation="horizontal"
-        >
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="run"
-        android:id="@+id/run_button" />
-
-    </LinearLayout>
 </LinearLayout>

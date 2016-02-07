@@ -53,15 +53,17 @@ public class ProfileFragment extends Fragment {
 
     public void onViewCreated(View view, Bundle savedInstanceState){
         super.onViewCreated(view,savedInstanceState);
-        button = (Button)view.findViewById(R.id.run_button);
 
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent toRunView = new Intent(getContext(), RunListViewActivity.class);
-                startActivity(toRunView);
-            }
-        });
+        //link to results
+//        button = (Button)view.findViewById(R.id.run_button);
+
+//        button.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent toRunView = new Intent(getContext(), RunListViewActivity.class);
+//                startActivity(toRunView);
+//            }
+//        });
 
     }
 
@@ -78,10 +80,8 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-
-
-        return inflater.inflate(R.layout.fragment_profile, container, false);
-
+        View view = inflater.inflate(R.layout.fragment_profile, container, false);
+        return view;
     }
 
     // TODO: Rename method, update argument and hook method into UI event

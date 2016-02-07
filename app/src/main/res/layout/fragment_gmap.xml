@@ -8,7 +8,7 @@
     android:orientation="vertical">
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="108dp"
+        android:layout_height="76dp"
         android:background="#91CDF2"
         android:weightSum="2"
         android:orientation="horizontal"
@@ -38,7 +38,7 @@
                 android:layout_alignParentBottom="true"
                 android:layout_centerHorizontal="true"
                 android:textStyle="bold"
-                android:textSize="30dp" />
+                android:textSize="20dp" />
 
         </RelativeLayout>
        <RelativeLayout
@@ -66,15 +66,21 @@
                android:id="@+id/textView2"
                android:layout_alignParentBottom="true"
                android:layout_centerHorizontal="true"
-               android:textSize="30dp"
+               android:textSize="20dp"
                android:textStyle="bold" />
        </RelativeLayout>
     </LinearLayout>
+
+
 <RelativeLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_weight="1"
     >
+
+
+
+
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/map"
@@ -85,6 +91,8 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
+
+
 
     <info.hoang8f.widget.FButton
         android:layout_height="wrap_content"
@@ -99,6 +107,8 @@
         android:layout_gravity="center_horizontal"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
+
+
 </RelativeLayout>
 
 
