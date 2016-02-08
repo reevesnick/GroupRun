@@ -16,10 +16,13 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Chronometer;
+import android.widget.Toolbar;
+
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -44,7 +47,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.Locale;
 import info.hoang8f.widget.FButton;
-public class MapActivity extends FragmentActivity implements
+public class MapActivity extends AppCompatActivity implements
         OnMapReadyCallback, LocationListener, GoogleApiClient.ConnectionCallbacks, View.OnClickListener, NavigationView.OnNavigationItemSelectedListener {
 
 
@@ -120,6 +123,9 @@ public class MapActivity extends FragmentActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nav);
 
+        android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
 
         //Start Google Client
         this.buildGoogleApiClient();
@@ -138,7 +144,17 @@ public class MapActivity extends FragmentActivity implements
 
         mapFragment.getMapAsync(this);
 
+        uiComponents();
 
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+    }
+
+    /*
+        Where all ui components are handled
+     */
+    public void uiComponents(){
         button = (FButton) findViewById(R.id.startButton);
         chronometer = (Chronometer) findViewById(R.id.chronometer);
         textToSpeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
@@ -151,9 +167,6 @@ public class MapActivity extends FragmentActivity implements
         });
 
         button.setOnClickListener(this);
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     private synchronized void buildGoogleApiClient() {
