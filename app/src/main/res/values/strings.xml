@@ -8,4 +8,8 @@
     <string name="title_activity_google_maps">Map</string>
     <string name="title_activity_maps">Map</string>
     <string name="google_app_id">AIzaSyD4gMzJ5u5QsT-BzjkTbJ3oJQsM70U9p_A</string>
+    <string name="title_activity_nav">Group Run</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
 </resources>
