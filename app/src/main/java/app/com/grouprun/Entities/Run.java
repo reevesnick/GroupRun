@@ -1,4 +1,4 @@
-package Entities;
+package app.com.grouprun.Entities;
 
 import java.util.Timer;
 

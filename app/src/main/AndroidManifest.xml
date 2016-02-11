@@ -23,7 +23,7 @@
         android:theme="@style/AppTheme">
         <meta-data
             android:name="android.support.PARENT_ACTIVITY"
-            android:value=".LoginActivity" />
+            android:value=".Activities.LoginActivity" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -37,7 +37,7 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".MapActivity"
+            android:name=".Activities.MapActivity"
             android:label="@string/title_activity_nav"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -53,21 +53,26 @@
             android:value="@string/facebook_app_id" />
 
         <activity
-            android:name=".RunListActivity"
+            android:name=".Activities.RunListActivity"
             android:label="@string/title_activity_nav"
-            android:parentActivityName=".MapActivity"
+            android:parentActivityName=".Activities.MapActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".LoginActivity"
+            android:name=".Activities.LoginActivity"
             android:label="@string/title_activity_nav"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    </application>
 
+        <activity android:name=".Activities.SignUpActivity"
+            android:parentActivityName=".Activities.LoginActivity"
+            android:screenOrientation="portrait">
+
+        </activity>
+
+    </application>
 </manifest>
