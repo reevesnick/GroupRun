@@ -10,8 +10,13 @@
     <string name="google_app_id">AIzaSyD4gMzJ5u5QsT-BzjkTbJ3oJQsM70U9p_A</string>
     <string name="title_activity_nav">Group Run</string>
 
+    <!-- Facebook-->
     <string name="facebook_app_id">476991325828514</string>
-
+    <string name="facebook_text">Facebook</string>
+    <string name="com_facebook_loginview_log_out_button">Log out</string>
+    <string name="com_facebook_loginview_log_in_button">Log in</string>
+    <string name="com_facebook_loginview_log_in_button_long">Log in with Facebook</string>
+    <!-- Facebook end-->
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password (optional)</string>

@@ -69,20 +69,32 @@
 </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="53dp"
             android:orientation="horizontal"
-            android:weightSum="2"
-            android:layout_weight="1.07">
+            android:weightSum="2">
 
     <fragment
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/facebook_login_button"
-        android:name="app.com.grouprun.FacebookButtonFragment"
+        android:name="app.com.grouprun.Fragments.FacebookButtonFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:text="@string/facebook_text"
+
         tools:layout="@layout/fragment_facebook_button" />
 
 
+            <fragment
+                android:id="@+id/sign_in_button"
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:name="app.com.grouprun.Fragments.GoogleSignInFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="1"
+                tools:layout="@layout/fragment_google_sign_in"
+                />
 
         </LinearLayout>
 

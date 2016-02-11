@@ -1,9 +1,18 @@
 package app.com.grouprun;
-import com.facebook.FacebookActivity;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.login.widget.LoginButton;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInApi;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.Api;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.OptionalPendingResult;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.Status;
 
 import android.annotation.TargetApi;
 import android.app.LoaderManager.LoaderCallbacks;
@@ -12,7 +21,6 @@ import android.content.Intent;
 import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.hardware.camera2.params.Face;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -20,6 +28,7 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
@@ -33,13 +42,18 @@ import android.widget.Toast;
 //import com.parse.ParseException;
 //import com.parse.ParseUser;
 
+import java.util.concurrent.TimeUnit;
+
+import app.com.grouprun.Fragments.FacebookButtonFragment;
+import app.com.grouprun.Fragments.GoogleSignInFragment;
+
 import static android.Manifest.permission.READ_CONTACTS;
 
 /**
  * A login screen that offers login via email/password.
  */
 public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor>,FacebookCallback,
-        FacebookButtonFragment.OnFragmentInteractionListener{
+        FacebookButtonFragment.OnFragmentInteractionListener,GoogleApiClient.OnConnectionFailedListener,GoogleSignInApi, GoogleSignInFragment.OnFragmentInteractionListener{
     /**
      * Id to identity READ_CONTACTS permission request.
      */
@@ -63,7 +77,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private Button logInButton;
     private TextView signUpText;
     private LoginButton loginButton;
-
+    private GoogleApiClient mGoogleApiClient;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,6 +95,21 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         signUpText = (TextView)findViewById(R.id.link_signup);
         signin();
         register();
+
+
+
+//        TODO: Finish configuring google sign-in tutorial
+        // Configure sign-in to request the user's ID, email address, and basic profile. ID and
+// basic profile are included in DEFAULT_SIGN_IN.
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+
+// Build a GoogleApiClient with access to GoogleSignIn.API and the options above.
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, (GoogleApiClient.OnConnectionFailedListener) this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
 
 
     }
@@ -284,6 +313,37 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     @Override
     public void onFragmentInteraction(Uri uri) {
+
+    }
+
+    @Override
+    public Intent getSignInIntent(GoogleApiClient googleApiClient) {
+        return null;
+    }
+
+    @Override
+    public OptionalPendingResult<GoogleSignInResult> silentSignIn(GoogleApiClient googleApiClient) {
+        return null;
+    }
+
+    @Override
+    public PendingResult<Status> signOut(GoogleApiClient googleApiClient) {
+        return null;
+    }
+
+    @Override
+    public PendingResult<Status> revokeAccess(GoogleApiClient googleApiClient) {
+        return null;
+    }
+
+    @Override
+    public GoogleSignInResult getSignInResultFromIntent(Intent intent) {
+        return null;
+    }
+
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
 

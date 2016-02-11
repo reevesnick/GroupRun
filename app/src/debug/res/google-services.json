@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_id": "group-1213",
+    "project_number": "47157920005",
+    "name": "Group run"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:47157920005:android:309739d58877b49d",
+        "client_id": "android:com.app.grouprun",
+        "client_type": 1,
+        "android_client_info": {
+          "package_name": "com.app.grouprun"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "47157920005-e8p400cde07qcljm01j0f32a82qjp79k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.grouprun",
+            "certificate_hash": "3998F4B197352BD19217BBCDBF2A5AC031F3A554"
+          }
+        },
+        {
+          "client_id": "47157920005-raq6ffd9ecrie975s6s95t6ndqaavqsk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "cloud_messaging_service": {
+          "status": 1,
+          "apns_config": []
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "google_signin_service": {
+          "status": 2
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "client_info": [],
+  "ARTIFACT_VERSION": "1"
+}

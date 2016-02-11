@@ -1,7 +1,6 @@
-package app.com.grouprun;
+package app.com.grouprun.Fragments;
 
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,11 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.facebook.CallbackManager;
-import com.facebook.FacebookCallback;
-import com.facebook.FacebookException;
-import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
-import com.google.android.gms.plus.PlusOneButton;
+
+import app.com.grouprun.R;
 
 /**
  * A fragment with a Google +1 button.

@@ -40,7 +40,7 @@
             android:name=".MapActivity"
             android:label="@string/title_activity_nav"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <!--
              ATTENTION: This was auto-generated to add Google Play services to your project for
              App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -56,7 +56,7 @@
             android:name=".RunListActivity"
             android:label="@string/title_activity_nav"
             android:parentActivityName=".MapActivity"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".LoginActivity"
             android:label="@string/title_activity_nav"
