@@ -7,6 +7,7 @@ import java.util.List;
  * Created by newuser on 1/28/16.
  */
 public class Runner {
+    private String emailAddress;
     private String firstName;
     private String lastName;
     private double weight;
@@ -14,6 +15,7 @@ public class Runner {
     List<Run> activities;
 
     public Runner(){
+        this.emailAddress ="";
         this.firstName = "";
         this.lastName = "";
         this.weight = 0.0;

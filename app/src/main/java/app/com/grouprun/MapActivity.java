@@ -29,6 +29,7 @@ import android.view.View;
 import android.widget.Chronometer;
 import android.widget.Toolbar;
 
+import com.facebook.appevents.AppEventsLogger;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -57,7 +58,7 @@ import java.util.Locale;
 
 import info.hoang8f.widget.FButton;
 
-public class MapActivity extends AppCompatActivity implements
+public class MapActivity extends FragmentActivity implements
         OnMapReadyCallback, LocationListener, GoogleApiClient.ConnectionCallbacks, View.OnClickListener, NavigationView.OnNavigationItemSelectedListener {
 
 
@@ -133,8 +134,7 @@ public class MapActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nav);
 
-        android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        android.support.v7.widget.Toolbar  toolbar = (  android.support.v7.widget.Toolbar ) findViewById(R.id.toolbar);
 
 
         //Start Google Client
@@ -299,10 +299,11 @@ public class MapActivity extends AppCompatActivity implements
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
-                    mLocationRequest, this);
+
             return;
         }
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
+                mLocationRequest, this);
 
 
     }
@@ -442,6 +443,19 @@ public class MapActivity extends AppCompatActivity implements
         AppIndex.AppIndexApi.end(client, viewAction);
         client.disconnect();
     }
+    @Override
+    protected void onResume() {
+        super.onResume();
 
+        // Logs 'install' and 'app activate' App Events.
+        AppEventsLogger.activateApp(this);
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // Logs 'app deactivate' App Event.
+        AppEventsLogger.deactivateApp(this);
+    }
 
 }
