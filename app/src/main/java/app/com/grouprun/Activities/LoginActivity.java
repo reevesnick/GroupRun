@@ -112,13 +112,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     private void register(){
-//        signUpText.setOnClickListener(new OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//               Intent intent = new Intent(getApplicationContext(),SignUpActivity.class);
-//                startActivity(intent);
-//            }
-//        });
+        signUpText.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               Intent intent = new Intent(getApplicationContext(),SignUpActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     private void signin(){
