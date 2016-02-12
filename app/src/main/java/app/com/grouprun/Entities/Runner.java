@@ -12,7 +12,7 @@ public class Runner {
     private String lastName;
     private double weight;
     private double height;
-    List<Run> activities;
+    List<Run> listOfRuns;
 
     public Runner(){
         this.emailAddress ="";
@@ -20,13 +20,13 @@ public class Runner {
         this.lastName = "";
         this.weight = 0.0;
         this.height = 0.0;
-        activities = new ArrayList<Run>();
+        listOfRuns = new ArrayList<Run>();
     }
 
     public Runner(String firstName, String lastName){
         this.firstName = firstName;
         this.lastName = lastName;
-        activities = new ArrayList<Run>();
+        listOfRuns = new ArrayList<Run>();
     }
 
     public String getFirstName() {
