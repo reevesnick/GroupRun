@@ -28,6 +28,12 @@
     <string name="error_field_required">This field is required</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email completions."</string>
 
+    <!-- Run Completed Strings-->
+    <string name="run_completed_message">Run Completed!</string>
+    <string name="distance">Distance: </string>
+    <string name="time">Time: </string>
+    <string name="save_run">Save</string>
+    <string name="cancel_run">Cancel</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>

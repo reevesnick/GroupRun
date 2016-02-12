@@ -2,6 +2,8 @@ package app.com.grouprun.Activities;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
+import android.support.v4.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -14,6 +16,7 @@ import android.os.SystemClock;
 import android.speech.tts.TextToSpeech;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -25,6 +28,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Chronometer;
+import android.widget.Toast;
 
 import com.facebook.appevents.AppEventsLogger;
 import com.google.android.gms.appindexing.Action;
@@ -53,11 +57,13 @@ import org.json.JSONObject;
 
 import java.util.Locale;
 
+import app.com.grouprun.Fragments.CompletedRunDialogFragment;
 import app.com.grouprun.R;
 import info.hoang8f.widget.FButton;
 
 public class MapActivity extends FragmentActivity implements
-        OnMapReadyCallback, LocationListener, GoogleApiClient.ConnectionCallbacks, View.OnClickListener, NavigationView.OnNavigationItemSelectedListener {
+        OnMapReadyCallback, LocationListener, GoogleApiClient.ConnectionCallbacks, View.OnClickListener,
+        NavigationView.OnNavigationItemSelectedListener, CompletedRunDialogFragment.OnFragmentInteractionListener,CompletedRunDialogFragment.CompletedRunDialogListener {
 
 
     private GoogleMap mMap;
@@ -340,9 +346,14 @@ public class MapActivity extends FragmentActivity implements
             time = chronometer.getBase() - SystemClock.elapsedRealtime();
             chronometer.stop();
             textToSpeech.speak("Run stopped", TextToSpeech.QUEUE_FLUSH, null, null);
+
+
             button.setButtonColor(Color.GREEN);
             button.setText("Start");
             chronometer.setBase(SystemClock.elapsedRealtime());
+
+            showNoticeDialog();
+
             time = 0;
         }
     }
@@ -479,4 +490,24 @@ public class MapActivity extends FragmentActivity implements
         AppEventsLogger.deactivateApp(this);
     }
 
+    public void showNoticeDialog() {
+        // Create an instance of the dialog fragment and show it
+        FragmentManager fm = getSupportFragmentManager();
+        DialogFragment dialog = new CompletedRunDialogFragment();
+        dialog.show(fm,"run_completed_message");
+    }
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
+    }
+
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialogFragment) {
+            Toast.makeText(this, "Run saved!" ,Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDialogNegativeClick(DialogFragment dialog) {
+
+    }
 }
