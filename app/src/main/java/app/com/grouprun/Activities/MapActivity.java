@@ -361,6 +361,26 @@ public class MapActivity extends FragmentActivity implements
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(mLatLng, 16));
     }
 
+
+    public void distanceBetween(){
+        double startLatitude = 0;
+        double startLongitude = 0;
+        double endLatitude = 0;
+        double endLongitude = 0;
+
+
+        double R, a, c, d, dLat,dLon;
+        R=6371.00;
+        dLat = (endLatitude - startLatitude);
+        Math.toRadians(dLat);
+        dLon = (endLongitude - startLongitude);
+        Math.toRadians(dLon);
+        a = Math.sin(dLat/2.00) * Math.sin(dLat/2.00) + Math.cos(Math.toRadians(startLatitude)) * Math.cos(Math.toRadians(endLatitude)) * Math.sin(dLon/2) * Math.sin(dLat/2);
+        c =2 * Math.atan2(Math.sqrt(a), Math.sqrt(1.00-a));
+        d= R * c;
+        System.out.println("Miles: "+d);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -422,6 +442,7 @@ public class MapActivity extends FragmentActivity implements
                 Uri.parse("android-app://app.com.grouprun/http/host/path")
         );
         AppIndex.AppIndexApi.start(client, viewAction);
+        distanceBetween();
     }
 
     @Override
