@@ -12,6 +12,9 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.Status;
+import com.parse.LogInCallback;
+import com.parse.ParseException;
+import com.parse.ParseUser;
 
 import android.annotation.TargetApi;
 import android.app.LoaderManager.LoaderCallbacks;
@@ -124,10 +127,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private void signin(){
 
         logInButton.setOnClickListener(new OnClickListener() {
+
+
             @Override
             public void onClick(View v) {
-                Intent toLogin = new Intent(LoginActivity.this, MapActivity.class);
-                startActivity(toLogin);
+            Intent intent = new Intent(getApplicationContext(), MapActivity.class);
+                startActivity(intent);
+
 //                if ("".equals(userName) || "".equals(passwordText)) {
 ////                    DISPLAY INPUT VALIDTION ERROR
 //                    return;
@@ -137,12 +143,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 //                        @Override
 //                        public void done(ParseUser parseUser, ParseException e) {
 //                            if (parseUser != null) {
+//                                Intent toLogin = new Intent(LoginActivity.this, MapActivity.class);
+//                                startActivity(toLogin);
 //                                userName.setText("");
 //                                passwordText.setText("");
 //                                signInMessage("You have successfully logged in!");
 //
 //                            } else {
 ////                            DISPLAY ERRROR
+//                                signInMessage("Your username or password was incorrect.");
 //                                System.out.println(parseUser);
 //                            }
 //                        }

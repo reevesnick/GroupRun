@@ -1,5 +1,6 @@
-package app.com.grouprun.Entities;
+package app.com.grouprun.Models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -8,12 +9,16 @@ import java.util.List;
 public class Group {
     private String name;
     private Run run;
-    private List<Runner> runners;
+    private double longitude;
+    private double latitude;
+    private List<User> runners;
 
     public Group(){
         name ="";
         run = new Run();
-        runners = null;
+        runners = new ArrayList<>();
+        latitude=0.0;
+        longitude=0.0;
     }
 
     public String getName() {
@@ -32,11 +37,11 @@ public class Group {
         this.run = run;
     }
 
-    public List<Runner> getRunners() {
+    public List<User> getRunners() {
         return runners;
     }
 
-    public void setRunners(List<Runner> runners) {
+    public void setRunners(List<User> runners) {
         this.runners = runners;
     }
 }

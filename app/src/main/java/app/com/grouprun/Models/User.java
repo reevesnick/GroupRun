@@ -1,4 +1,4 @@
-package app.com.grouprun.Entities;
+package app.com.grouprun.Models;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,15 +6,18 @@ import java.util.List;
 /**
  * Created by newuser on 1/28/16.
  */
-public class Runner {
+public class User {
     private String emailAddress;
     private String firstName;
     private String lastName;
     private double weight;
     private double height;
+    private boolean isRunning;
+    private double latitude;
+    private double longitude;
     List<Run> listOfRuns;
 
-    public Runner(){
+    public User(){
         this.emailAddress ="";
         this.firstName = "";
         this.lastName = "";
@@ -23,7 +26,7 @@ public class Runner {
         listOfRuns = new ArrayList<Run>();
     }
 
-    public Runner(String firstName, String lastName){
+    public User(String firstName, String lastName){
         this.firstName = firstName;
         this.lastName = lastName;
         listOfRuns = new ArrayList<Run>();
@@ -59,5 +62,37 @@ public class Runner {
 
     public void setHeight(double height) {
         this.height = height;
+    }
+
+    public boolean isRunning() {
+        return isRunning;
+    }
+
+    public void setIsRunning(boolean isRunning) {
+        this.isRunning = isRunning;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public String getEmailAddress() {
+        return emailAddress;
+    }
+
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
     }
 }

@@ -14,7 +14,4 @@ public class RunListActivity extends AppCompatActivity {
 
 
     }
-
-
-
 }
