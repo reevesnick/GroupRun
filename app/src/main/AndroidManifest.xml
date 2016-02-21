@@ -73,6 +73,11 @@
             android:screenOrientation="portrait">
 
         </activity>
+        <activity android:name=".Activities.MusicActivity"
+            android:parentActivityName=".Activities.MapActivity"
+            android:screenOrientation="portrait">
+
+        </activity>
 
     </application>
 </manifest>

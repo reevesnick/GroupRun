@@ -418,6 +418,10 @@ public class MapActivity extends FragmentActivity implements
         } else if (id == R.id.nav_send) {
 
         }
+        else if(id == R.id.music_player){
+            Intent musicPlayerIntent = new Intent(getApplicationContext(), MusicActivity.class);
+            startActivity(musicPlayerIntent);
+        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
