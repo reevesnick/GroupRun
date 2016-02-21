@@ -16,6 +16,8 @@
     <string name="com_facebook_loginview_log_out_button">Log out</string>
     <string name="com_facebook_loginview_log_in_button">Log in</string>
     <string name="com_facebook_loginview_log_in_button_long">Log in with Facebook</string>
+    <string name="parse_app_id">bod2m2xVQt15kFgCHoRSXNDJ1e8XDdYQHEBH1sss</string>
+    <string name="parse_client_key">DcLTk5ExvQFaFt8dG5yb5VAG8VigvNJpkQTunFhK</string>
     <!-- Facebook end-->
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
@@ -37,4 +39,9 @@
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+
+
+    <string name="end">End</string>
+    <string name="play">Play</string>
+    <string name="shuffle">Shuffle</string>
 </resources>

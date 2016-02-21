@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:fitsSystemWindows="true"
-    tools:context=".Activities.LoginActivity">
+    tools:context=".Activities.SignUpActivity">
 
     <LinearLayout
         android:orientation="vertical"
@@ -25,23 +25,15 @@
             android:layout_marginTop="8dp"
             android:layout_weight="1"
             android:layout_marginBottom="8dp">
-            <EditText android:id="@+id/input_firstName"
+            <EditText android:id="@+id/input_username"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:inputType="textCapWords"
-                android:hint="First Name" />
+                android:hint="Username" />
 
-        </android.support.design.widget.TextInputLayout>  <android.support.design.widget.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="8dp"
-        android:layout_weight="1"
-        android:layout_marginBottom="8dp">
-        <EditText android:id="@+id/input_lastName"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:inputType="textCapWords"
-            android:hint="Last Name" /> </android.support.design.widget.TextInputLayout>
+        </android.support.design.widget.TextInputLayout>
+
+
 
         <android.support.design.widget.TextInputLayout
         android:layout_width="match_parent"
@@ -103,4 +95,4 @@
             android:textSize="16dip"/>
 
     </LinearLayout>
-</ScrollView>
+</LinearLayout>

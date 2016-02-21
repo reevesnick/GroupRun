@@ -9,6 +9,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.parse.ParseException;
+import com.parse.ParseUser;
+import com.parse.SignUpCallback;
+
 import app.com.grouprun.R;
 
 
@@ -26,13 +30,8 @@ public class SignUpActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
-//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
-//        toolbar.setTitle("HERE");
 
-        firstName = (EditText)findViewById(R.id.input_firstName);
-        lastName= (EditText)findViewById(R.id.input_lastName);
-        username = (EditText)findViewById(R.id.userName);
+        username = (EditText)findViewById(R.id.input_username);
         email = (EditText)findViewById(R.id.input_email);
         register = (Button)findViewById(R.id.button_signup);
         password = (EditText)findViewById(R.id.input_password);
@@ -59,26 +58,25 @@ public class SignUpActivity extends AppCompatActivity {
             public void onClick(View v) {
 
 
-//                ParseUser user = new ParseUser();
-//                user.setEmail(email.getText().toString());
-//                user.setUsername(username.getText().toString());
-//                user.setPassword(password.getText().toString());
-//                user.put("Firstname", firstName.getText().toString());
-//                user.put("Lastname", lastName.getText().toString());
-//
-//                user.signUpInBackground(new SignUpCallback() {
-//                    @Override
-//                    public void done(ParseException e) {
-//                        if (e == null) {
-//                            signUpMsg("Account Created Successfully");
-//
-//                            Intent sigin_intent  = new Intent(getApplicationContext(),LoginActivity.class);
-//                            startActivity(sigin_intent);
-//                        } else {
-//                            signUpMsg("Account already taken.");
-//                        }
-//                    }
-//                });
+                ParseUser user = new ParseUser();
+                user.setEmail(email.getText().toString());
+                user.setUsername(username.getText().toString());
+                user.setPassword(password.getText().toString());
+
+
+                user.signUpInBackground(new SignUpCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        if (e == null) {
+                            signUpMsg("Account Created Successfully");
+
+                            Intent sigin_intent  = new Intent(getApplicationContext(),LoginActivity.class);
+                            startActivity(sigin_intent);
+                        } else {
+                            signUpMsg("Account already taken.");
+                        }
+                    }
+                });
             }
 
         });

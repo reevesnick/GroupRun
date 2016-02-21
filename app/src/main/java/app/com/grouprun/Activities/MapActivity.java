@@ -1,8 +1,6 @@
 package app.com.grouprun.Activities;
-
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.AlertDialog;
 import android.support.v4.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
@@ -23,13 +21,14 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Chronometer;
+import android.widget.TextView;
 import android.widget.Toast;
-
 import com.facebook.appevents.AppEventsLogger;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
@@ -47,6 +46,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.parse.ParseUser;
 import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
 import com.pubnub.api.PubnubError;
@@ -61,9 +61,14 @@ import app.com.grouprun.Fragments.CompletedRunDialogFragment;
 import app.com.grouprun.R;
 import info.hoang8f.widget.FButton;
 
-public class MapActivity extends FragmentActivity implements
-        OnMapReadyCallback, LocationListener, GoogleApiClient.ConnectionCallbacks, View.OnClickListener,
-        NavigationView.OnNavigationItemSelectedListener, CompletedRunDialogFragment.OnFragmentInteractionListener,CompletedRunDialogFragment.CompletedRunDialogListener {
+public class MapActivity extends AppCompatActivity implements
+        OnMapReadyCallback,
+        LocationListener,
+        GoogleApiClient.ConnectionCallbacks,
+        View.OnClickListener,
+        NavigationView.OnNavigationItemSelectedListener,
+        CompletedRunDialogFragment.OnFragmentInteractionListener,
+        CompletedRunDialogFragment.CompletedRunDialogListener {
 
 
     private GoogleMap mMap;
@@ -74,15 +79,15 @@ public class MapActivity extends FragmentActivity implements
     FButton button;
     TextToSpeech textToSpeech;
     MapFragment googleMapFrag;
-
-    Chronometer chronometer;
+    Chronometer timeChronometer;
+    Chronometer distanceChronometer;
     long time;
-
+    ParseUser currentUser;
     //Google API Client needed for PubNub
     private GoogleApiClient mGoogleApiClient;
-
     private Pubnub mPubnub;
-
+    private TextView email;
+    private TextView name;
     private PolylineOptions mPolylineOptions; // Polyline Options Variable
     private LatLng mLatLng;
 
@@ -137,14 +142,17 @@ public class MapActivity extends FragmentActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nav);
-
         android.support.v7.widget.Toolbar  toolbar = (  android.support.v7.widget.Toolbar ) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
+
+//        currentUser = ParseUser.getCurrentUser();
+//        name.setText(currentUser.getUsername());
+//        email.setText(currentUser.getEmail());
 
         //Start Google Client
         this.buildGoogleApiClient();
         mGoogleApiClient.connect();
-
 
 
         mPubnub = new Pubnub("pub-c-330ec2e2-f6e7-4558-9010-5247b1f0b098", "sub-c-bad78d26-6f9f-11e5-ac0d-02ee2ddab7fe");
@@ -153,7 +161,6 @@ public class MapActivity extends FragmentActivity implements
         } catch (PubnubException e) {
             Log.e("PubNubException", e.toString());
         }
-
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -171,17 +178,22 @@ public class MapActivity extends FragmentActivity implements
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-    }
 
+
+
+    }
     /*
         Where all ui components are handled
      */
     public void uiComponents() {
+
+//        name = (TextView) findViewById(R.id.name);
+//        email = (TextView) findViewById(R.id.email);
         button = (FButton) findViewById(R.id.startButton);
-        chronometer = (Chronometer) findViewById(R.id.chronometer);
+        timeChronometer = (Chronometer) findViewById(R.id.timeChronometer);
+        distanceChronometer = (Chronometer) findViewById(R.id.distanceChronometer);
         textToSpeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
@@ -219,6 +231,7 @@ public class MapActivity extends FragmentActivity implements
         mMap.getUiSettings().setScrollGesturesEnabled(false);
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
+
             mMap.setMyLocationEnabled(true);
             userLocation = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             location = userLocation.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
@@ -274,7 +287,7 @@ public class MapActivity extends FragmentActivity implements
         Log.d("Location Update", "Latitude: " + location.getLatitude() +
                 " Longitude: " + location.getLongitude());
 
-        broadcastLocation(location);
+         broadcastLocation(location);
     }
 
     private void broadcastLocation(Location location) {
@@ -336,23 +349,34 @@ public class MapActivity extends FragmentActivity implements
         if (text.equals("Start")) {
 
 
-            chronometer.setBase(SystemClock.elapsedRealtime() + time);
-            chronometer.start();
+            timeChronometer.setBase(SystemClock.elapsedRealtime() + time);
+            timeChronometer.start();
             textToSpeech.speak("Run started", TextToSpeech.QUEUE_FLUSH, null, null);
             button.setButtonColor(Color.RED);
             button.setText("Stop");
 
         } else {
-            time = chronometer.getBase() - SystemClock.elapsedRealtime();
-            chronometer.stop();
+            time = timeChronometer.getBase() - SystemClock.elapsedRealtime();
+
+//            Pass time to completed run dialog
+            Bundle bundle = new Bundle();
+            String currentTime = timeChronometer.getText().toString();
+            String distanceText = distanceChronometer.getText().toString();
+            String timeText = String.valueOf(currentTime);
+            bundle.putString("timeText", timeText);
+            bundle.putString("distanceText", distanceText);
+//end
+            timeChronometer.stop();
             textToSpeech.speak("Run stopped", TextToSpeech.QUEUE_FLUSH, null, null);
 
 
             button.setButtonColor(Color.GREEN);
             button.setText("Start");
-            chronometer.setBase(SystemClock.elapsedRealtime());
+            timeChronometer.setBase(SystemClock.elapsedRealtime());
 
-            showNoticeDialog();
+
+
+            showNoticeDialog(bundle);
 
             time = 0;
         }
@@ -426,10 +450,17 @@ public class MapActivity extends FragmentActivity implements
             startActivity(runViewIntent);
         }else if (id == R.id.nav_share) {
 
+        } else if (id == R.id.music) {
+            Intent musicIntent = new Intent(getApplicationContext(),MusicActivity.class);
+            startActivity(musicIntent);
         } else if (id == R.id.nav_send) {
 
-        }
+        }else if(id==R.id.logout){
+            currentUser.logOut();
 
+            Intent logout = new Intent(getApplicationContext(), LoginActivity.class);
+            startActivity(logout);
+        }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
@@ -490,11 +521,17 @@ public class MapActivity extends FragmentActivity implements
         AppEventsLogger.deactivateApp(this);
     }
 
-    public void showNoticeDialog() {
+    public void showNoticeDialog(Bundle bundle) {
         // Create an instance of the dialog fragment and show it
         FragmentManager fm = getSupportFragmentManager();
+
+
         DialogFragment dialog = new CompletedRunDialogFragment();
+        dialog.setArguments(bundle);
         dialog.show(fm,"run_completed_message");
+
+
+
     }
     @Override
     public void onFragmentInteraction(Uri uri) {
@@ -510,4 +547,6 @@ public class MapActivity extends FragmentActivity implements
     public void onDialogNegativeClick(DialogFragment dialog) {
 
     }
+
+
 }

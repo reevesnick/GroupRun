@@ -1,9 +1,5 @@
 package app.com.grouprun.Fragments;
-
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,8 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
-
 import app.com.grouprun.R;
 
 /**
@@ -29,6 +25,8 @@ public class CompletedRunDialogFragment extends DialogFragment {
 
     private Button saveButton;
     private Button cancelButton;
+    private EditText editText;
+    private EditText distanceText;
 
     public interface CompletedRunDialogListener{
         public void onDialogPositiveClick(DialogFragment dialog);
@@ -38,7 +36,9 @@ public class CompletedRunDialogFragment extends DialogFragment {
 
     CompletedRunDialogListener completedRunDialogListener;
 
+
     public CompletedRunDialogFragment(){
+
 
     }
 
@@ -50,35 +50,39 @@ public class CompletedRunDialogFragment extends DialogFragment {
         final View view = inflater.inflate(R.layout.fragment_completed_run_dialog, container);
         saveButton = (Button)view.findViewById(R.id.save_button);
         cancelButton = (Button)view.findViewById(R.id.cancel_button);
+        editText = (EditText) view.findViewById(R.id.edit_text);
+        distanceText = (EditText) view.findViewById(R.id.distance_text);
+        String timeText = getArguments().getString("timeText");
+        String distanceText = getArguments().getString("distanceText");
+        this.distanceText.setText(timeText);
+        this.editText.setText(distanceText);
         onCancelButton();
         onSaveButton();
 
         return view;
     }
-
     public void onCancelButton(){
-
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getDialog().dismiss();
-
             }
         });
     }
 
+    public void setDistanceText(String text){
+        editText.setText(text);
+    }
     public void onSaveButton(){
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            getDialog().dismiss();
+                getDialog().dismiss();
 //                TODO: Save to Users run --- Parse
-                Toast.makeText(getContext(),"Run saved!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Run saved!", Toast.LENGTH_SHORT).show();
             }
         });
     }
-
-
 
     @Override
     public void onAttach(Activity activity) {
@@ -113,4 +117,8 @@ public class CompletedRunDialogFragment extends DialogFragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
+
+
+
+
 }
