@@ -91,6 +91,8 @@ public class MapActivity extends AppCompatActivity implements
     private PolylineOptions mPolylineOptions; // Polyline Options Variable
     private LatLng mLatLng;
 
+    //private TextView milesLabel;
+
     // PubNub Publish Callback
     Callback publishCallback = new Callback() {
         @Override
@@ -351,6 +353,7 @@ public class MapActivity extends AppCompatActivity implements
 
             timeChronometer.setBase(SystemClock.elapsedRealtime() + time);
             timeChronometer.start();
+
             textToSpeech.speak("Run started", TextToSpeech.QUEUE_FLUSH, null, null);
             button.setButtonColor(Color.RED);
             button.setText("Stop");
@@ -397,6 +400,24 @@ public class MapActivity extends AppCompatActivity implements
     }
 
 
+
+    private double distance(double lat1, double lon1, double lat2, double lon2) {
+        double theta = lon1 - lon2;
+        double dist = Math.sin(deg2rad(lat1)) * Math.sin(deg2rad(lat2)) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.cos(deg2rad(theta));
+        dist = Math.acos(dist);
+        dist = rad2deg(dist);
+        dist = dist * 60 * 1.1515;
+        return (dist);
+
+    }
+
+    private double deg2rad(double deg) {
+        return (deg * Math.PI / 180.0);
+    }
+    private double rad2deg(double rad) {
+        return (rad * 180.0 / Math.PI);
+    }
+/*
     public void distanceBetween(){
         double startLatitude = 0;
         double startLongitude = 0;
@@ -415,7 +436,7 @@ public class MapActivity extends AppCompatActivity implements
         d= R * c;
         System.out.println("Miles: "+d);
     }
-
+*/
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -461,7 +482,7 @@ public class MapActivity extends AppCompatActivity implements
             Intent logout = new Intent(getApplicationContext(), LoginActivity.class);
             startActivity(logout);
         }
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout); 
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -484,7 +505,7 @@ public class MapActivity extends AppCompatActivity implements
                 Uri.parse("android-app://app.com.grouprun/http/host/path")
         );
         AppIndex.AppIndexApi.start(client, viewAction);
-        distanceBetween();
+       // distanceBetween();
     }
 
     @Override
