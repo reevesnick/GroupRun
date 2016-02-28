@@ -30,6 +30,15 @@
         <meta-data
             android:name="android.support.PARENT_ACTIVITY"
             android:value=".Activities.LoginActivity" />
+
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
+        <activity
+            android:name="com.facebook.FacebookActivity"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -67,6 +76,7 @@
             android:name=".Activities.LoginActivity"
             android:label="@string/title_activity_nav"
             android:screenOrientation="portrait"
+            android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -79,8 +89,9 @@
             android:parentActivityName=".Activities.LoginActivity"
             android:screenOrientation="portrait" >
         </activity>
-    <activity android:name=".Activities.MusicActivity"
-
+    <activity
+        android:name=".Activities.MusicActivity"
+        android:label="@string/title_activity_nav"
         android:parentActivityName=".Activities.MapActivity"
         android:screenOrientation="portrait">
 

@@ -1,7 +1,11 @@
 package app.com.grouprun.Activities;
+import com.facebook.AccessToken;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInApi;
@@ -14,15 +18,23 @@ import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.Status;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
+import com.parse.ParseFacebookUtils;
+import com.parse.ParseFile;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import android.annotation.TargetApi;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -32,16 +44,33 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 //import com.parse.LogInCallback;
 //import com.parse.ParseException;
 //import com.parse.ParseUser;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.List;
 
 import app.com.grouprun.Fragments.FacebookButtonFragment;
 import app.com.grouprun.Fragments.GoogleSignInFragment;
@@ -52,8 +81,8 @@ import static android.Manifest.permission.READ_CONTACTS;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor>,FacebookCallback,
-        FacebookButtonFragment.OnFragmentInteractionListener,GoogleApiClient.OnConnectionFailedListener,GoogleSignInApi, GoogleSignInFragment.OnFragmentInteractionListener{
+public class LoginActivity extends AppCompatActivity implements FacebookCallback,
+        FacebookButtonFragment.OnFragmentInteractionListener, LoaderCallbacks<Object> {
     /**
      * Id to identity READ_CONTACTS permission request.
      */
@@ -69,23 +98,43 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private UserLoginTask mAuthTask = null;
-
+    final List<String> permissions = Arrays.asList("public_profile", "email","picture");
     // UI references.
     private EditText userName;
     private EditText passwordText;
     private Button logInButton;
     private TextView signUpText;
-    private LoginButton loginButton;
-    private GoogleApiClient mGoogleApiClient;
+    private LoginButton faceBookButton;
+    String name;
+    String email;
+    ParseUser parseUser;
+    ImageView mProfileImage;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FacebookSdk.sdkInitialize(getApplicationContext());
 
+
+
         setContentView(R.layout.activity_login);
 
-        logInButton = (LoginButton) findViewById(R.id.facebook_login_button);
+        faceBookButton = (LoginButton) findViewById(R.id.facebook_login_button);
+
+
+        try {
+            PackageInfo info = getPackageManager().getPackageInfo(
+                    "app.com.grouprun",
+                    PackageManager.GET_SIGNATURES);
+            for (Signature signature : info.signatures) {
+                MessageDigest md = MessageDigest.getInstance("SHA");
+                md.update(signature.toByteArray());
+                Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+        } catch (NoSuchAlgorithmException e) {
+        }
+
+
 
         // Set up the login form.
         userName = (EditText) findViewById(R.id.userName);
@@ -95,33 +144,107 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         signUpText = (TextView)findViewById(R.id.link_signup);
         signin();
         register();
-
-
-
-//        TODO: Finish configuring google sign-in tutorial
-        // Configure sign-in to request the user's ID, email address, and basic profile. ID and
-// basic profile are included in DEFAULT_SIGN_IN.
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build();
-
-// Build a GoogleApiClient with access to GoogleSignIn.API and the options above.
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, (GoogleApiClient.OnConnectionFailedListener) this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
+        parseSignin();
 
 
     }
-
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        ParseFacebookUtils.onActivityResult(requestCode, resultCode, data);
+    }
     private void register(){
         signUpText.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-               Intent intent = new Intent(getApplicationContext(),SignUpActivity.class);
+                Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
                 startActivity(intent);
             }
         });
+    }
+
+
+    public void parseSignin(){
+
+        faceBookButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+
+                ParseFacebookUtils.logInWithReadPermissionsInBackground(LoginActivity.this, permissions, new LogInCallback() {
+
+                    @Override
+                    public void done(final ParseUser user, ParseException err) {
+
+
+                        if (user == null) {
+                            Log.d("MyApp", "Uh oh. The user cancelled the Facebook login.");
+                        } else if (user.isNew()) {
+                            Log.d("MyApp", "User signed up and logged in through Facebook!");
+                            getUserDetailsFromFB();
+                        }else if (!ParseFacebookUtils.isLinked(user)) {
+                            ParseFacebookUtils.linkWithReadPermissionsInBackground(user, LoginActivity.this, permissions, new SaveCallback() {
+                                @Override
+                                public void done(ParseException ex) {
+                                    if (ParseFacebookUtils.isLinked(user)) {
+                                        getUserDetailsFromParse();
+                                    }
+                                }
+                            });
+                        } else {
+                            getUserDetailsFromParse();
+                        }
+                    }
+                });
+            }
+        });
+    }
+    public void getUserDetailsFromParse() {
+        parseUser = ParseUser.getCurrentUser();
+        Toast.makeText(LoginActivity.this, "Welcome back " + parseUser.getUsername(), Toast.LENGTH_SHORT).show();
+        Intent toMapActivity = new Intent(LoginActivity.this, MapActivity.class);
+        startActivity(toMapActivity);
+    }
+    private void getUserDetailsFromFB() {
+
+        // Suggested by https://disqus.com/by/dominiquecanlas/
+        Bundle parameters = new Bundle();
+        parameters.putString("fields", "email,name,picture");
+        new GraphRequest(
+                AccessToken.getCurrentAccessToken(),
+                "/me",
+                parameters,
+                HttpMethod.GET,
+                new GraphRequest.Callback() {
+                    public void onCompleted(GraphResponse response) {
+         /* handle the result */
+                        try {
+                            email = response.getJSONObject().getString("email");
+                            name = response.getJSONObject().getString("name");
+                            JSONObject picture = response.getJSONObject().getJSONObject("picture");
+                            JSONObject data = picture.getJSONObject("data");
+                            //  Returns a 50x50 profile picture
+                            String pictureUrl = data.getString("url");
+                            new ProfilePhotoAsync(pictureUrl).execute();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+        ).executeAsync();
+    }
+    private void saveNewUser() {
+        parseUser = ParseUser.getCurrentUser();
+        parseUser.setUsername(name);
+        parseUser.setEmail(email);
+        parseUser.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                Toast.makeText(LoginActivity.this, "New user:" + name + " Signed up", Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
 
     private void signin(){
@@ -131,33 +254,31 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
             @Override
             public void onClick(View v) {
-            Intent intent = new Intent(getApplicationContext(), MapActivity.class);
-                startActivity(intent);
 
-//                if ("".equals(userName) || "".equals(passwordText)) {
-////                    DISPLAY INPUT VALIDTION ERROR
-//                    return;
-//                } else {
-//
-//                    ParseUser.logInInBackground(userName.getText().toString(), passwordText.getText().toString(), new LogInCallback() {
-//                        @Override
-//                        public void done(ParseUser parseUser, ParseException e) {
-//                            if (parseUser != null) {
-//                                Intent toLogin = new Intent(LoginActivity.this, MapActivity.class);
-//                                startActivity(toLogin);
-//                                userName.setText("");
-//                                passwordText.setText("");
-//                                signInMessage("You have successfully logged in!");
-//
-//                            } else {
-////                            DISPLAY ERRROR
-//                                signInMessage("Your username or password was incorrect.");
-//                                System.out.println(parseUser);
-//                            }
-//                        }
-//                    });
-//
-//                }
+                if ("".equals(userName) || "".equals(passwordText)) {
+//                    DISPLAY INPUT VALIDTION ERROR
+                    return;
+                } else {
+
+                    ParseUser.logInInBackground(userName.getText().toString(), passwordText.getText().toString(), new LogInCallback() {
+                        @Override
+                        public void done(ParseUser parseUser, ParseException e) {
+                            if (parseUser != null) {
+                                Intent toLogin = new Intent(LoginActivity.this, MapActivity.class);
+                                startActivity(toLogin);
+                                userName.setText("");
+                                passwordText.setText("");
+                                signInMessage("You have successfully logged in!");
+
+                            } else {
+//                            DISPLAY ERRROR
+                                signInMessage("Your username or password was incorrect.");
+                                System.out.println(parseUser);
+                            }
+                        }
+                    });
+
+                }
             }
         });
     }
@@ -210,98 +331,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
 
-    /**
-     * Attempts to sign in or register the account specified by the login form.
-     * If there are form errors (invalid email, missing fields, etc.), the
-     * errors are presented and no actual login attempt is made.
-     */
-    private void attemptLogin() {
-        if (mAuthTask != null) {
-            return;
-        }
-
-        // Reset errors.
-        userName.setError(null);
-        passwordText.setError(null);
-
-        // Store values at the time of the login attempt.
-        String email = userName.getText().toString();
-        String password = passwordText.getText().toString();
-
-        boolean cancel = false;
-        View focusView = null;
-
-        // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
-            passwordText.setError(getString(R.string.error_invalid_password));
-            focusView = passwordText;
-            cancel = true;
-        }
-
-        // Check for a valid email address.
-        if (TextUtils.isEmpty(email)) {
-            userName.setError(getString(R.string.error_field_required));
-            focusView = userName;
-            cancel = true;
-        } else if (!isEmailValid(email)) {
-            userName.setError(getString(R.string.error_invalid_email));
-            focusView = userName;
-            cancel = true;
-        }
-
-        if (cancel) {
-            // There was an error; don't attempt login and focus the first
-            // form field with an error.
-            focusView.requestFocus();
-        } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
-//            showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);
-        }
-    }
-
-    private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
-        return email.contains("@");
-    }
-
-    private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
-        return password.length() > 4;
-    }
-
-
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return new CursorLoader(this,
-                // Retrieve data rows for the device user's 'profile' contact.
-                Uri.withAppendedPath(ContactsContract.Profile.CONTENT_URI,
-                        ContactsContract.Contacts.Data.CONTENT_DIRECTORY), ProfileQuery.PROJECTION,
-
-                // Select only email addresses.
-                ContactsContract.Contacts.Data.MIMETYPE +
-                        " = ?", new String[]{ContactsContract.CommonDataKinds.Email
-                .CONTENT_ITEM_TYPE},
-
-                // Show primary email addresses first. Note that there won't be
-                // a primary email address if the user hasn't specified one.
-                ContactsContract.Contacts.Data.IS_PRIMARY + " DESC");
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
-    }
-
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> cursorLoader) {
-
-    }
-
     @Override
     public void onSuccess(Object o) {
 
@@ -323,103 +352,52 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     @Override
-    public Intent getSignInIntent(GoogleApiClient googleApiClient) {
+    public Loader<Object> onCreateLoader(int id, Bundle args) {
         return null;
     }
 
     @Override
-    public OptionalPendingResult<GoogleSignInResult> silentSignIn(GoogleApiClient googleApiClient) {
-        return null;
+    public void onLoadFinished(Loader<Object> loader, Object data) {
+
     }
 
     @Override
-    public PendingResult<Status> signOut(GoogleApiClient googleApiClient) {
-        return null;
-    }
-
-    @Override
-    public PendingResult<Status> revokeAccess(GoogleApiClient googleApiClient) {
-        return null;
-    }
-
-    @Override
-    public GoogleSignInResult getSignInResultFromIntent(Intent intent) {
-        return null;
-    }
-
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+    public void onLoaderReset(Loader<Object> loader) {
 
     }
-
-    private interface ProfileQuery {
-        String[] PROJECTION = {
-                ContactsContract.CommonDataKinds.Email.ADDRESS,
-                ContactsContract.CommonDataKinds.Email.IS_PRIMARY,
-        };
-
-        int ADDRESS = 0;
-        int IS_PRIMARY = 1;
-    }
-
-
-
-
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-
-        private final String mEmail;
-        private final String mPassword;
-
-        UserLoginTask(String email, String password) {
-            mEmail = email;
-            mPassword = password;
+    class ProfilePhotoAsync extends AsyncTask<String, String, String> {
+        public Bitmap bitmap;
+        String url;
+        public ProfilePhotoAsync(String url) {
+            this.url = url;
         }
-
         @Override
-        protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
-
-            try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
-
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }
-
-            // TODO: register the new account here.
-            return true;
+        protected String doInBackground(String... params) {
+            // Fetching data from URI and storing in bitmap
+            bitmap = DownloadImageBitmap(url);
+            return null;
         }
-
         @Override
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
-//            showProgress(false);
-
-            if (success) {
-                finish();
-            } else {
-                passwordText.setError(getString(R.string.error_incorrect_password));
-                passwordText.requestFocus();
-            }
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            saveNewUser();
         }
 
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-//            showProgress(false);
+    }
+    public static Bitmap DownloadImageBitmap(String url) {
+        Bitmap bm = null;
+        try {
+            URL aURL = new URL(url);
+            URLConnection conn = aURL.openConnection();
+            conn.connect();
+            InputStream is = conn.getInputStream();
+            BufferedInputStream bis = new BufferedInputStream(is);
+            bm = BitmapFactory.decodeStream(bis);
+            bis.close();
+            is.close();
+        } catch (IOException e) {
+            Log.e("IMAGE", "Error getting bitmap", e);
         }
+        return bm;
     }
 }

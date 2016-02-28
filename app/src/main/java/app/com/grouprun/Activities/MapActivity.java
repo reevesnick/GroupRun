@@ -90,7 +90,7 @@ public class MapActivity extends AppCompatActivity implements
     private TextView name;
     private PolylineOptions mPolylineOptions; // Polyline Options Variable
     private LatLng mLatLng;
-
+    private    android.support.v7.widget.Toolbar  toolbar;
     // PubNub Publish Callback
     Callback publishCallback = new Callback() {
         @Override
@@ -142,13 +142,11 @@ public class MapActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nav);
-        android.support.v7.widget.Toolbar  toolbar = (  android.support.v7.widget.Toolbar ) findViewById(R.id.toolbar);
+        toolbar = (  android.support.v7.widget.Toolbar ) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
-//        currentUser = ParseUser.getCurrentUser();
-//        name.setText(currentUser.getUsername());
-//        email.setText(currentUser.getEmail());
+        currentUser = ParseUser.getCurrentUser();
+        uiComponents();
 
         //Start Google Client
         this.buildGoogleApiClient();
@@ -167,19 +165,10 @@ public class MapActivity extends AppCompatActivity implements
 
         mapFragment.getMapAsync(this);
 
-        uiComponents();
-
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
 
 
 
@@ -189,8 +178,19 @@ public class MapActivity extends AppCompatActivity implements
      */
     public void uiComponents() {
 
-//        name = (TextView) findViewById(R.id.name);
-//        email = (TextView) findViewById(R.id.email);
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+        View headerLayout = navigationView.getHeaderView(0);
+
+        name = (TextView)headerLayout.findViewById(R.id.name);
+        email = (TextView)headerLayout.findViewById(R.id.email);
+
+
         button = (FButton) findViewById(R.id.startButton);
         timeChronometer = (Chronometer) findViewById(R.id.timeChronometer);
         distanceChronometer = (Chronometer) findViewById(R.id.distanceChronometer);
@@ -204,6 +204,10 @@ public class MapActivity extends AppCompatActivity implements
         });
 
         button.setOnClickListener(this);
+
+        //set name and email to navigation drawer
+        name.setText(currentUser.getUsername().toString());
+        email.setText(currentUser.getEmail().toString());
     }
 
     private synchronized void buildGoogleApiClient() {
@@ -397,6 +401,8 @@ public class MapActivity extends AppCompatActivity implements
     }
 
 
+
+
     public void distanceBetween(){
         double startLatitude = 0;
         double startLongitude = 0;
@@ -485,6 +491,7 @@ public class MapActivity extends AppCompatActivity implements
         );
         AppIndex.AppIndexApi.start(client, viewAction);
         distanceBetween();
+
     }
 
     @Override

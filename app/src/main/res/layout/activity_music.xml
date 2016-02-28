@@ -2,14 +2,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:background="#FF330000"
     android:id="@+id/view"
-    tools:context=".MusicActivity" >
+    tools:context=".MusicActivity">
 
     <ListView
         android:id="@+id/song_list"
         android:layout_width="fill_parent"
+        android:background="#000000"
         android:layout_height="0dp"
         android:layout_weight="1">
     </ListView>
