@@ -24,10 +24,12 @@ import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
@@ -40,6 +42,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.provider.SyncStateContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -77,7 +80,6 @@ import app.com.grouprun.Fragments.GoogleSignInFragment;
 import app.com.grouprun.R;
 
 import static android.Manifest.permission.READ_CONTACTS;
-
 /**
  * A login screen that offers login via email/password.
  */
@@ -98,7 +100,7 @@ public class LoginActivity extends AppCompatActivity implements FacebookCallback
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    final List<String> permissions = Arrays.asList("public_profile", "email","picture");
+    final List<String> permissions = Arrays.asList("public_profile", "email");
     // UI references.
     private EditText userName;
     private EditText passwordText;
@@ -109,15 +111,12 @@ public class LoginActivity extends AppCompatActivity implements FacebookCallback
     String email;
     ParseUser parseUser;
     ImageView mProfileImage;
+    Bitmap image;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FacebookSdk.sdkInitialize(getApplicationContext());
-
-
-
         setContentView(R.layout.activity_login);
-
         faceBookButton = (LoginButton) findViewById(R.id.facebook_login_button);
 
 
@@ -133,20 +132,15 @@ public class LoginActivity extends AppCompatActivity implements FacebookCallback
         } catch (PackageManager.NameNotFoundException e) {
         } catch (NoSuchAlgorithmException e) {
         }
-
-
-
         // Set up the login form.
         userName = (EditText) findViewById(R.id.userName);
-        populateAutoComplete();
+//        populateAutoComplete();
         passwordText = (EditText) findViewById(R.id.input_password);
         logInButton = (Button)findViewById(R.id.button_login);
         signUpText = (TextView)findViewById(R.id.link_signup);
         signin();
         register();
         parseSignin();
-
-
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -169,21 +163,16 @@ public class LoginActivity extends AppCompatActivity implements FacebookCallback
         faceBookButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
-
                 ParseFacebookUtils.logInWithReadPermissionsInBackground(LoginActivity.this, permissions, new LogInCallback() {
 
                     @Override
                     public void done(final ParseUser user, ParseException err) {
-
-
                         if (user == null) {
                             Log.d("MyApp", "Uh oh. The user cancelled the Facebook login.");
                         } else if (user.isNew()) {
                             Log.d("MyApp", "User signed up and logged in through Facebook!");
                             getUserDetailsFromFB();
-                        }else if (!ParseFacebookUtils.isLinked(user)) {
+                        } else if (!ParseFacebookUtils.isLinked(user)) {
                             ParseFacebookUtils.linkWithReadPermissionsInBackground(user, LoginActivity.this, permissions, new SaveCallback() {
                                 @Override
                                 public void done(ParseException ex) {
@@ -205,6 +194,7 @@ public class LoginActivity extends AppCompatActivity implements FacebookCallback
         Toast.makeText(LoginActivity.this, "Welcome back " + parseUser.getUsername(), Toast.LENGTH_SHORT).show();
         Intent toMapActivity = new Intent(LoginActivity.this, MapActivity.class);
         startActivity(toMapActivity);
+        finish();
     }
     private void getUserDetailsFromFB() {
 
@@ -234,32 +224,33 @@ public class LoginActivity extends AppCompatActivity implements FacebookCallback
                 }
         ).executeAsync();
     }
-    private void saveNewUser() {
+    private void saveNewUser(final Bitmap image) {
         parseUser = ParseUser.getCurrentUser();
         parseUser.setUsername(name);
         parseUser.setEmail(email);
         parseUser.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
-                Toast.makeText(LoginActivity.this, "New user:" + name + " Signed up", Toast.LENGTH_SHORT).show();
+                Intent toLogin = new Intent(LoginActivity.this, MapActivity.class);
+                toLogin.putExtra("profilePic", image);
+                Toast.makeText(LoginActivity.this, "Welcome " + name + ", thanks for signing up!", Toast.LENGTH_SHORT).show();
+                startActivity(toLogin);
+                finish();
+
             }
         });
-
     }
 
     private void signin(){
-
         logInButton.setOnClickListener(new OnClickListener() {
 
 
             @Override
             public void onClick(View v) {
-
                 if ("".equals(userName) || "".equals(passwordText)) {
 //                    DISPLAY INPUT VALIDTION ERROR
                     return;
                 } else {
-
                     ParseUser.logInInBackground(userName.getText().toString(), passwordText.getText().toString(), new LogInCallback() {
                         @Override
                         public void done(ParseUser parseUser, ParseException e) {
@@ -287,35 +278,36 @@ public class LoginActivity extends AppCompatActivity implements FacebookCallback
         Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
     }
 
-    private void populateAutoComplete() {
-        if (!mayRequestContacts()) {
-            return;
-        }
-
-        getLoaderManager().initLoader(0, null, this);
-    }
-
-    private boolean mayRequestContacts() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return true;
-        }
-        if (checkSelfPermission(READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        }
-        if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
-            Snackbar.make(userName, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
-                    .setAction(android.R.string.ok, new OnClickListener() {
-                        @Override
-                        @TargetApi(Build.VERSION_CODES.M)
-                        public void onClick(View v) {
-                            requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
-                        }
-                    });
-        } else {
-            requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
-        }
-        return false;
-    }
+//    private void populateAutoComplete() {
+//        if (!mayRequestContacts()) {
+//            return;
+//        }
+//
+//        getLoaderManager().initLoader(0, null, this);
+//    }
+//
+//
+//    private boolean mayRequestContacts() {
+//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+//            return true;
+//        }
+//        if (checkSelfPermission(READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+//            return true;
+//        }
+//        if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
+//            Snackbar.make(userName, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
+//                    .setAction(android.R.string.ok, new OnClickListener() {
+//                        @Override
+//                        @TargetApi(Build.VERSION_CODES.M)
+//                        public void onClick(View v) {
+//                            requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
+//                        }
+//                    });
+//        } else {
+//            requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
+//        }
+//        return false;
+//    }
 
     /**
      * Callback received when a permissions request has been completed.
@@ -325,7 +317,7 @@ public class LoginActivity extends AppCompatActivity implements FacebookCallback
                                            @NonNull int[] grantResults) {
         if (requestCode == REQUEST_READ_CONTACTS) {
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                populateAutoComplete();
+//                populateAutoComplete();
             }
         }
     }
@@ -380,7 +372,8 @@ public class LoginActivity extends AppCompatActivity implements FacebookCallback
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            saveNewUser();
+//            mProfileImage.setImageBitmap(bitmap);
+            saveNewUser(bitmap);
         }
 
     }

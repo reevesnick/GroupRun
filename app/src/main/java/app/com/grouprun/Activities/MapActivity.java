@@ -1,6 +1,8 @@
 package app.com.grouprun.Activities;
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.support.v4.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
@@ -27,9 +29,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Chronometer;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.facebook.AccessToken;
 import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginManager;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -46,7 +52,12 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.parse.ParseException;
+import com.parse.ParseFacebookUtils;
+import com.parse.ParseObject;
+import com.parse.ParseRelation;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
 import com.pubnub.api.PubnubError;
@@ -91,6 +102,7 @@ public class MapActivity extends AppCompatActivity implements
     private PolylineOptions mPolylineOptions; // Polyline Options Variable
     private LatLng mLatLng;
     private    android.support.v7.widget.Toolbar  toolbar;
+    ImageView profileImage;
     // PubNub Publish Callback
     Callback publishCallback = new Callback() {
         @Override
@@ -183,13 +195,22 @@ public class MapActivity extends AppCompatActivity implements
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-        View headerLayout = navigationView.getHeaderView(0);
+            NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+            navigationView.setNavigationItemSelectedListener(this);
+            View headerLayout = navigationView.getHeaderView(0);
 
         name = (TextView)headerLayout.findViewById(R.id.name);
         email = (TextView)headerLayout.findViewById(R.id.email);
-
+        profileImage = (ImageView)headerLayout.findViewById(R.id.imageView);
+        Intent picIntent = getIntent();
+        Bitmap image = picIntent.getParcelableExtra("profilePic");
+        if(image!=null)
+        {
+            System.out.println("IMAGE: "+image.toString());
+            profileImage.setImageBitmap(image);
+        }else{
+            System.out.println("Image is null");
+        }
 
         button = (FButton) findViewById(R.id.startButton);
         timeChronometer = (Chronometer) findViewById(R.id.timeChronometer);
@@ -348,6 +369,7 @@ public class MapActivity extends AppCompatActivity implements
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onClick(View v) {
+        boolean isRunning = true;
 
         String text = button.getText().toString();
         if (text.equals("Start")) {
@@ -356,6 +378,8 @@ public class MapActivity extends AppCompatActivity implements
             timeChronometer.setBase(SystemClock.elapsedRealtime() + time);
             timeChronometer.start();
             textToSpeech.speak("Run started", TextToSpeech.QUEUE_FLUSH, null, null);
+            currentUser.put("isRunning", true);
+            currentUser.saveInBackground();
             button.setButtonColor(Color.RED);
             button.setText("Stop");
 
@@ -364,11 +388,18 @@ public class MapActivity extends AppCompatActivity implements
 
 //            Pass time to completed run dialog
             Bundle bundle = new Bundle();
-            String currentTime = timeChronometer.getText().toString();
+            final String currentTime = timeChronometer.getText().toString();
             String distanceText = distanceChronometer.getText().toString();
             String timeText = String.valueOf(currentTime);
             bundle.putString("timeText", timeText);
             bundle.putString("distanceText", distanceText);
+
+
+
+            //store run to parse
+            currentUser.put("isRunning", false);
+            currentUser.saveInBackground();
+
 //end
             timeChronometer.stop();
             textToSpeech.speak("Run stopped", TextToSpeech.QUEUE_FLUSH, null, null);
@@ -462,8 +493,9 @@ public class MapActivity extends AppCompatActivity implements
         } else if (id == R.id.nav_send) {
 
         }else if(id==R.id.logout){
+            //First clear the current session
+            LoginManager.getInstance().logOut();
             currentUser.logOut();
-
             Intent logout = new Intent(getApplicationContext(), LoginActivity.class);
             startActivity(logout);
         }
@@ -526,7 +558,12 @@ public class MapActivity extends AppCompatActivity implements
 
         // Logs 'app deactivate' App Event.
         AppEventsLogger.deactivateApp(this);
+        SharedPreferences prefs = getSharedPreferences("X", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("lastActivity", getClass().getName());
+        editor.commit();
     }
+
 
     public void showNoticeDialog(Bundle bundle) {
         // Create an instance of the dialog fragment and show it

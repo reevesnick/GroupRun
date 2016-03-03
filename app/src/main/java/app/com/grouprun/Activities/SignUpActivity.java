@@ -56,14 +56,10 @@ public class SignUpActivity extends AppCompatActivity {
         signIN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
                 ParseUser user = new ParseUser();
                 user.setEmail(email.getText().toString());
                 user.setUsername(username.getText().toString());
                 user.setPassword(password.getText().toString());
-
-
                 user.signUpInBackground(new SignUpCallback() {
                     @Override
                     public void done(ParseException e) {

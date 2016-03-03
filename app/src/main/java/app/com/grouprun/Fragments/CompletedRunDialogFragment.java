@@ -1,6 +1,5 @@
 package app.com.grouprun.Fragments;
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -10,7 +9,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
+
+import com.parse.ParseObject;
+import com.parse.ParseRelation;
+import com.parse.ParseUser;
+
 import app.com.grouprun.R;
 
 /**
@@ -25,9 +28,9 @@ public class CompletedRunDialogFragment extends DialogFragment {
 
     private Button saveButton;
     private Button cancelButton;
-    private EditText editText;
+    private EditText timeText;
     private EditText distanceText;
-
+    private ParseUser currentUser;
     public interface CompletedRunDialogListener{
         public void onDialogPositiveClick(DialogFragment dialog);
         public void onDialogNegativeClick(DialogFragment dialog);
@@ -50,14 +53,16 @@ public class CompletedRunDialogFragment extends DialogFragment {
         final View view = inflater.inflate(R.layout.fragment_completed_run_dialog, container);
         saveButton = (Button)view.findViewById(R.id.save_button);
         cancelButton = (Button)view.findViewById(R.id.cancel_button);
-        editText = (EditText) view.findViewById(R.id.edit_text);
+        timeText = (EditText) view.findViewById(R.id.time_text);
         distanceText = (EditText) view.findViewById(R.id.distance_text);
         String timeText = getArguments().getString("timeText");
+        this.timeText.setText(timeText);
         String distanceText = getArguments().getString("distanceText");
-        this.distanceText.setText(timeText);
-        this.editText.setText(distanceText);
+        this.distanceText.setText(distanceText);
         onCancelButton();
         onSaveButton();
+
+        currentUser = ParseUser.getCurrentUser();
 
         return view;
     }
@@ -71,15 +76,21 @@ public class CompletedRunDialogFragment extends DialogFragment {
     }
 
     public void setDistanceText(String text){
-        editText.setText(text);
+        timeText.setText(text);
     }
     public void onSaveButton(){
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getDialog().dismiss();
-//                TODO: Save to Users run --- Parse
-                Toast.makeText(getContext(), "Run saved!", Toast.LENGTH_SHORT).show();
+
+                ParseObject run = new ParseObject("Run");
+                run.put("time",timeText.getText().toString());
+                run.put("distance", distanceText.getText().toString());
+                ParseRelation userRun = currentUser.getRelation("listOfRuns");
+                userRun.add(run);
+                run.saveInBackground();
+                currentUser.saveInBackground();
             }
         });
     }

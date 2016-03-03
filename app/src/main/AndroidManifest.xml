@@ -26,6 +26,8 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
+        android:alwaysRetainTaskState="true"
+        android:exported="true"
         android:theme="@style/AppTheme" >
         <meta-data
             android:name="android.support.PARENT_ACTIVITY"
@@ -76,11 +78,10 @@
             android:name=".Activities.LoginActivity"
             android:label="@string/title_activity_nav"
             android:screenOrientation="portrait"
-            android:launchMode="singleTop"
+
             android:theme="@style/AppTheme.NoActionBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
