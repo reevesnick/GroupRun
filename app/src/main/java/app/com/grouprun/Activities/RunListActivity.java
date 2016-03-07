@@ -30,13 +30,11 @@ public class RunListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_run_list);
-
         currentUser = ParseUser.getCurrentUser();
         view = (ListView) findViewById(R.id.listView);
         runObject = new ParseObject("Run");
         adpater = new CustomAdapter(getApplicationContext());
         view.setAdapter(adpater);
-
 
     }
 
