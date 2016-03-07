@@ -1,6 +1,7 @@
 package app.com.grouprun.Activities;
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.os.Environment;
 import android.support.v4.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
@@ -26,6 +27,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Chronometer;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -55,6 +57,11 @@ import com.pubnub.api.PubnubException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Locale;
 
 import app.com.grouprun.Fragments.CompletedRunDialogFragment;
@@ -90,8 +97,16 @@ public class MapActivity extends AppCompatActivity implements
     private TextView name;
     private PolylineOptions mPolylineOptions; // Polyline Options Variable
     private LatLng mLatLng;
+    protected LocationManager locationManager;
+    float distance;
+
 
     //private TextView milesLabel;
+    public String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/GroupRun";
+
+    //Calculating Location Between
+    Location location1;
+    Location location2;
 
     // PubNub Publish Callback
     Callback publishCallback = new Callback() {
@@ -144,9 +159,13 @@ public class MapActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nav);
-        android.support.v7.widget.Toolbar  toolbar = (  android.support.v7.widget.Toolbar ) findViewById(R.id.toolbar);
+        android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        File dir = new File(path);
+        dir.mkdirs();
 
 //        currentUser = ParseUser.getCurrentUser();
 //        name.setText(currentUser.getUsername());
@@ -184,8 +203,8 @@ public class MapActivity extends AppCompatActivity implements
         navigationView.setNavigationItemSelectedListener(this);
 
 
-
     }
+
     /*
         Where all ui components are handled
      */
@@ -289,7 +308,7 @@ public class MapActivity extends AppCompatActivity implements
         Log.d("Location Update", "Latitude: " + location.getLatitude() +
                 " Longitude: " + location.getLongitude());
 
-         broadcastLocation(location);
+        broadcastLocation(location);
     }
 
     private void broadcastLocation(Location location) {
@@ -354,6 +373,11 @@ public class MapActivity extends AppCompatActivity implements
             timeChronometer.setBase(SystemClock.elapsedRealtime() + time);
             timeChronometer.start();
 
+            location1 = new Location("Start");
+            location1.setLatitude(latitude);
+            location1.setLongitude(longitude);
+
+
             textToSpeech.speak("Run started", TextToSpeech.QUEUE_FLUSH, null, null);
             button.setButtonColor(Color.RED);
             button.setText("Stop");
@@ -368,16 +392,25 @@ public class MapActivity extends AppCompatActivity implements
             String timeText = String.valueOf(currentTime);
             bundle.putString("timeText", timeText);
             bundle.putString("distanceText", distanceText);
+
+            //Create a local file
 //end
             timeChronometer.stop();
             textToSpeech.speak("Run stopped", TextToSpeech.QUEUE_FLUSH, null, null);
+
+            location2 = new Location("End");
+            location2.setLatitude(latitude);
+            location2.setLongitude(longitude);
+
+            distance = location1.distanceTo(location2);
 
 
             button.setButtonColor(Color.GREEN);
             button.setText("Start");
             timeChronometer.setBase(SystemClock.elapsedRealtime());
 
-
+            System.out.println("Miles: " + distance);
+            Toast.makeText(MapActivity.this, "Miles: " + distance, Toast.LENGTH_LONG).show();
 
             showNoticeDialog(bundle);
 
@@ -400,17 +433,17 @@ public class MapActivity extends AppCompatActivity implements
     }
 
 
-
     public double getDistance(double lat1, double lon1, double lat2, double lon2) {
         double latA = Math.toRadians(lat1);
         double lonA = Math.toRadians(lon1);
         double latB = Math.toRadians(lat2);
         double lonB = Math.toRadians(lon2);
-        double cosAng = (Math.cos(latA) * Math.cos(latB) * Math.cos(lonB-lonA)) +
+        double cosAng = (Math.cos(latA) * Math.cos(latB) * Math.cos(lonB - lonA)) +
                 (Math.sin(latA) * Math.sin(latB));
         double ang = Math.acos(cosAng);
-        double dist = ang *6371;
+        double dist = ang * 6371;
         return dist;
+        // System.out.println("Miles: "+dist);
     }
 
     @Override
@@ -434,6 +467,7 @@ public class MapActivity extends AppCompatActivity implements
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
+
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
@@ -445,20 +479,20 @@ public class MapActivity extends AppCompatActivity implements
         } else if (id == R.id.run_history) {
             Intent runViewIntent = new Intent(getApplicationContext(), RunListActivity.class);
             startActivity(runViewIntent);
-        }else if (id == R.id.nav_share) {
+        } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.music) {
-            Intent musicIntent = new Intent(getApplicationContext(),MusicActivity.class);
+            Intent musicIntent = new Intent(getApplicationContext(), MusicActivity.class);
             startActivity(musicIntent);
         } else if (id == R.id.nav_send) {
 
-        }else if(id==R.id.logout){
+        } else if (id == R.id.logout) {
             currentUser.logOut();
 
             Intent logout = new Intent(getApplicationContext(), LoginActivity.class);
             startActivity(logout);
         }
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout); 
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -481,7 +515,7 @@ public class MapActivity extends AppCompatActivity implements
                 Uri.parse("android-app://app.com.grouprun/http/host/path")
         );
         AppIndex.AppIndexApi.start(client, viewAction);
-       // distanceBetween();
+        // distanceBetween();
     }
 
     @Override
@@ -503,6 +537,7 @@ public class MapActivity extends AppCompatActivity implements
         AppIndex.AppIndexApi.end(client, viewAction);
         client.disconnect();
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -510,6 +545,7 @@ public class MapActivity extends AppCompatActivity implements
         // Logs 'install' and 'app activate' App Events.
         AppEventsLogger.activateApp(this);
     }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -525,11 +561,11 @@ public class MapActivity extends AppCompatActivity implements
 
         DialogFragment dialog = new CompletedRunDialogFragment();
         dialog.setArguments(bundle);
-        dialog.show(fm,"run_completed_message");
-
+        dialog.show(fm, "run_completed_message");
 
 
     }
+
     @Override
     public void onFragmentInteraction(Uri uri) {
 
@@ -537,7 +573,15 @@ public class MapActivity extends AppCompatActivity implements
 
     @Override
     public void onDialogPositiveClick(DialogFragment dialogFragment) {
-            Toast.makeText(this, "Run saved!" ,Toast.LENGTH_SHORT).show();
+        String currentTime = timeChronometer.getText().toString();
+        String distanceText = distanceChronometer.getText().toString();
+        String timeText = String.valueOf(currentTime);
+
+        File file = new File(path + "/runLog.txt");
+        String[] saveTime = String.valueOf(currentTime).split(System.getProperty("line separator"));
+
+        Save(file, saveTime);
+        Toast.makeText(this, "Run saved!", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -545,5 +589,33 @@ public class MapActivity extends AppCompatActivity implements
 
     }
 
+    public static void Save(File file, String[] data) {
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(file);
+        }
+        catch(FileNotFoundException e) {
+            e.printStackTrace();
+        }
+            try {
+                for (int i = 0; i < data.length; i++) {
+                    fos.write(data[i].getBytes());
+                    if (i < data.length - 1) {
+                        fos.write("\n".getBytes());
+                    }
+                }
 
-}
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+    }
+
+
