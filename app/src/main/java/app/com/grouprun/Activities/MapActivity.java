@@ -160,7 +160,7 @@ public class MapActivity extends AppCompatActivity implements
         android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        //locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         File dir = new File(path);
         dir.mkdirs();
@@ -390,8 +390,8 @@ public class MapActivity extends AppCompatActivity implements
             timeChronometer.start();
 
             location1 = new Location("Start");
-            location1.setLatitude(latitude);
-            location1.setLongitude(longitude);
+           // location1.setLatitude(latitude);
+          //  location1.setLongitude(longitude);
 
 
             textToSpeech.speak("Run started", TextToSpeech.QUEUE_FLUSH, null, null);
