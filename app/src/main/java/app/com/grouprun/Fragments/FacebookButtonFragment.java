@@ -1,16 +1,25 @@
 package app.com.grouprun.Fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 
+import java.util.Arrays;
+
+import app.com.grouprun.Activities.MapActivity;
 import app.com.grouprun.R;
 
 /**
@@ -21,7 +30,7 @@ import app.com.grouprun.R;
  * Use the {@link FacebookButtonFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class FacebookButtonFragment extends Fragment {
+public class FacebookButtonFragment extends Fragment implements View.OnClickListener{
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -74,11 +83,28 @@ public class FacebookButtonFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_facebook_button, container, false);
         loginButton = (LoginButton) view.findViewById(R.id.facebook_login_button);
-        loginButton.setReadPermissions("public_profile");
+        loginButton.setReadPermissions(Arrays.asList("public_profile"));
         loginButton.setFragment(this);
+        callbackManager = CallbackManager.Factory.create();
+        loginButton.setOnClickListener(this);
 
+        loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                Intent mapActivityIntent = new Intent(getContext(), MapActivity.class);
+                startActivity(mapActivityIntent);
+            }
 
+            @Override
+            public void onCancel() {
 
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+                Toast.makeText(null, "Something went wrong! Try again!", Toast.LENGTH_SHORT).show();
+            }
+        });
         return view;
     }
 
@@ -106,6 +132,11 @@ public class FacebookButtonFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onClick(View v) {
+        System.out.println("FACEBOOK BUTTON CLICK");
     }
 
     /**

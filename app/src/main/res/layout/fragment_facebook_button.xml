@@ -8,5 +8,4 @@
     android:layout_gravity="center_horizontal"
     android:paddingBottom="25sp"
     android:textSize="15sp"
-
     tools:context=".Fragments.FacebookButtonFragment" />

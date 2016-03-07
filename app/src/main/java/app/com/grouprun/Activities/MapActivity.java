@@ -16,7 +16,6 @@ import android.speech.tts.TextToSpeech;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
@@ -30,7 +29,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Chronometer;
 import android.widget.TextView;
-import android.widget.Toast;
+
 import com.facebook.appevents.AppEventsLogger;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
@@ -41,13 +40,13 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
 import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
@@ -81,11 +80,13 @@ public class MapActivity extends AppCompatActivity implements
     private GoogleMap mMap;
     LocationManager userLocation;
     Location location;
-    private static double latitude = 0.0;
-    private static double longitude = 0.0;
+    private static double latitudeOnStart = 0.0;
+    private static double prevLatitude= 0.0;
+    private static double longitudeOnStart = 0.0;
+    private static double prevLongitude = 0.0;
+    double distanceTraveled =0.0;
     FButton button;
     TextToSpeech textToSpeech;
-    MapFragment googleMapFrag;
     Chronometer timeChronometer;
     Chronometer distanceChronometer;
     long time;
@@ -97,10 +98,7 @@ public class MapActivity extends AppCompatActivity implements
     private TextView name;
     private PolylineOptions mPolylineOptions; // Polyline Options Variable
     private LatLng mLatLng;
-    protected LocationManager locationManager;
-    float distance;
-
-
+    Location prevLocation;
     //private TextView milesLabel;
     public String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/GroupRun";
 
@@ -258,9 +256,9 @@ public class MapActivity extends AppCompatActivity implements
             location = userLocation.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 
             if (location != null) {
-                latitude = location.getLatitude();
-                longitude = location.getLongitude();
-                LatLng currentLatLng = new LatLng(latitude, longitude);
+                latitudeOnStart = location.getLatitude();
+                longitudeOnStart = location.getLongitude();
+                LatLng currentLatLng = new LatLng(latitudeOnStart, longitudeOnStart);
                 //setting initial zoom
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 16));
 
@@ -290,7 +288,11 @@ public class MapActivity extends AppCompatActivity implements
     public void onLocationChanged(Location location) {
         this.location = location;
         int flag = 0;
-        LatLng prev = new LatLng(0, 0);
+        prevLocation = new Location("prev_location");
+        prevLocation.setLatitude(prevLatitude);
+        prevLocation.setLongitude(prevLongitude);
+        LatLng prev = new LatLng(prevLatitude, prevLatitude);
+
         LatLng current = new LatLng(location.getLatitude(), location.getLongitude());
 
         if (flag == 0) {
@@ -308,10 +310,13 @@ public class MapActivity extends AppCompatActivity implements
         Log.d("Location Update", "Latitude: " + location.getLatitude() +
                 " Longitude: " + location.getLongitude());
 
-        broadcastLocation(location);
+
+         broadcastLocation(location);
     }
 
     private void broadcastLocation(Location location) {
+        this.location= location;
+
         JSONObject message = new JSONObject();
         try {
             message.put("lat", location.getLatitude());
@@ -322,9 +327,20 @@ public class MapActivity extends AppCompatActivity implements
         }
         mPubnub.publish("MainRunning", message, publishCallback);
 
+        System.out.println("Latitude: " + location.getLatitude());
+        System.out.println("Longitude: " + location.getLongitude());
 
-        System.out.println("Latitude: " + latitude);
-        System.out.println("Longitude: " + longitude);
+
+        distanceTraveled+= location.distanceTo(prevLocation)* 0.00062137119;
+        String distance = String.format("%.2f", distanceTraveled);
+
+
+        System.out.println("Distance between locations: " + distance + " miles");
+
+        prevLatitude = location.getLatitude();
+        prevLongitude = location.getLongitude();
+
+        distanceChronometer.setText(distance);
     }
 
 
@@ -365,7 +381,7 @@ public class MapActivity extends AppCompatActivity implements
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onClick(View v) {
-
+        ParseGeoPoint currentLocation;
         String text = button.getText().toString();
         if (text.equals("Start")) {
 
@@ -379,6 +395,14 @@ public class MapActivity extends AppCompatActivity implements
 
 
             textToSpeech.speak("Run started", TextToSpeech.QUEUE_FLUSH, null, null);
+            currentUser.put("isRunning", true);
+            currentLocation = new ParseGeoPoint(latitudeOnStart, longitudeOnStart);
+            currentUser.put("current_location", currentLocation);
+            currentUser.saveInBackground();
+            prevLatitude = currentLocation.getLatitude();
+            prevLongitude= currentLocation.getLongitude();
+
+
             button.setButtonColor(Color.RED);
             button.setText("Stop");
 
@@ -397,21 +421,17 @@ public class MapActivity extends AppCompatActivity implements
 //end
             timeChronometer.stop();
             textToSpeech.speak("Run stopped", TextToSpeech.QUEUE_FLUSH, null, null);
-
-            location2 = new Location("End");
-            location2.setLatitude(latitude);
-            location2.setLongitude(longitude);
-
-            distance = location1.distanceTo(location2);
-
-
+            currentLocation = new ParseGeoPoint(latitudeOnStart, longitudeOnStart);
+            currentUser.put("isRunning", false);
+            currentUser.put("current_location", currentLocation);
+            currentUser.saveInBackground();
             button.setButtonColor(Color.GREEN);
             button.setText("Start");
             timeChronometer.setBase(SystemClock.elapsedRealtime());
 
-            System.out.println("Miles: " + distance);
-            Toast.makeText(MapActivity.this, "Miles: " + distance, Toast.LENGTH_LONG).show();
-
+            distanceChronometer.stop();
+            distanceChronometer.setText("0.00");
+            distanceTraveled=0;
             showNoticeDialog(bundle);
 
             time = 0;
@@ -433,18 +453,7 @@ public class MapActivity extends AppCompatActivity implements
     }
 
 
-    public double getDistance(double lat1, double lon1, double lat2, double lon2) {
-        double latA = Math.toRadians(lat1);
-        double lonA = Math.toRadians(lon1);
-        double latB = Math.toRadians(lat2);
-        double lonB = Math.toRadians(lon2);
-        double cosAng = (Math.cos(latA) * Math.cos(latB) * Math.cos(lonB - lonA)) +
-                (Math.sin(latA) * Math.sin(latB));
-        double ang = Math.acos(cosAng);
-        double dist = ang * 6371;
-        return dist;
-        // System.out.println("Miles: "+dist);
-    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -486,8 +495,8 @@ public class MapActivity extends AppCompatActivity implements
             startActivity(musicIntent);
         } else if (id == R.id.nav_send) {
 
-        } else if (id == R.id.logout) {
-            currentUser.logOut();
+        }else if(id==R.id.logout){
+            currentUser.logOutInBackground();
 
             Intent logout = new Intent(getApplicationContext(), LoginActivity.class);
             startActivity(logout);
@@ -500,7 +509,7 @@ public class MapActivity extends AppCompatActivity implements
     @Override
     public void onStart() {
         super.onStart();
-
+        currentUser = ParseUser.getCurrentUser();
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client.connect();
@@ -571,51 +580,6 @@ public class MapActivity extends AppCompatActivity implements
 
     }
 
-    @Override
-    public void onDialogPositiveClick(DialogFragment dialogFragment) {
-        String currentTime = timeChronometer.getText().toString();
-        String distanceText = distanceChronometer.getText().toString();
-        String timeText = String.valueOf(currentTime);
-
-        File file = new File(path + "/runLog.txt");
-        String[] saveTime = String.valueOf(currentTime).split(System.getProperty("line separator"));
-
-        Save(file, saveTime);
-        Toast.makeText(this, "Run saved!", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onDialogNegativeClick(DialogFragment dialog) {
-
-    }
-
-    public static void Save(File file, String[] data) {
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(file);
-        }
-        catch(FileNotFoundException e) {
-            e.printStackTrace();
-        }
-            try {
-                for (int i = 0; i < data.length; i++) {
-                    fos.write(data[i].getBytes());
-                    if (i < data.length - 1) {
-                        fos.write("\n".getBytes());
-                    }
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-        }
-    }
 
 
+}

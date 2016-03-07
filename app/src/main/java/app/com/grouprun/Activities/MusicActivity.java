@@ -1,5 +1,6 @@
 package app.com.grouprun.Activities;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -8,13 +9,18 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.design.widget.NavigationView;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.MediaController.MediaPlayerControl;
+import android.widget.Toolbar;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,12 +38,13 @@ import app.com.grouprun.SongAdapter;
  * Sue Smith - February 2014
  */
 
-public class MusicActivity extends Activity implements MediaPlayerControl {
+public class MusicActivity extends Activity implements MediaPlayerControl, NavigationView.OnNavigationItemSelectedListener {
 
     //song list variables
     private ArrayList<Song> songList;
     private ListView songView;
-
+//    Toolbar
+    private Toolbar toolbar;
     //service
     private MusicService musicSrv;
     private Intent playIntent;
@@ -55,6 +62,8 @@ public class MusicActivity extends Activity implements MediaPlayerControl {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music);
 
+        android.support.v7.widget.Toolbar  toolbar = (  android.support.v7.widget.Toolbar ) findViewById(R.id.toolbar);
+//        setActionBar(toolbar);
 
         //retrieve list view
         songView = (ListView)findViewById(R.id.song_list);
@@ -71,7 +80,13 @@ public class MusicActivity extends Activity implements MediaPlayerControl {
         //create and set adapter
         SongAdapter songAdt = new SongAdapter(this, songList);
         songView.setAdapter(songAdt);
-
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
         //setup controller
         setController();
     }
@@ -295,4 +310,8 @@ public class MusicActivity extends Activity implements MediaPlayerControl {
         super.onDestroy();
     }
 
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        return false;
+    }
 }

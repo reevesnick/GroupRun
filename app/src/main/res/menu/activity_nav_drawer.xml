@@ -17,10 +17,6 @@
             android:id="@+id/music"
             android:title="Music" />
 
-        <item
-            android:id="@+id/music_player"
-            android:title="Music Player"/>
-
 
 
     </group>

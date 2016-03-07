@@ -81,32 +81,16 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:text="@string/facebook_text"
-
         tools:layout="@layout/fragment_facebook_button" />
 
 
-            <fragment
-                android:id="@+id/sign_in_button"
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                android:name="app.com.grouprun.Fragments.GoogleSignInFragment"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="center_horizontal"
-                android:layout_weight="1"
-                tools:layout="@layout/fragment_google_sign_in"
-                />
-
         </LinearLayout>
-
-
-
-
 
 
         <TextView android:id="@+id/link_signup"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-
+            android:paddingTop="30dp"
             android:layout_marginBottom="24dp"
             android:text="No account yet? Create one"
             android:gravity="center"

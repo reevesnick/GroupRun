@@ -23,7 +23,7 @@ public class SignUpActivity extends AppCompatActivity {
     private EditText email;
     private EditText username;
     private EditText password;
-    private Button register;
+    private Button signIN;
     private TextView login;
 
     @Override
@@ -33,7 +33,7 @@ public class SignUpActivity extends AppCompatActivity {
 
         username = (EditText)findViewById(R.id.input_username);
         email = (EditText)findViewById(R.id.input_email);
-        register = (Button)findViewById(R.id.button_signup);
+        signIN = (Button)findViewById(R.id.button_signup);
         password = (EditText)findViewById(R.id.input_password);
         login = (TextView)findViewById(R.id.link_login);
         register();
@@ -53,24 +53,20 @@ public class SignUpActivity extends AppCompatActivity {
 
 
     public void register(){
-        register.setOnClickListener(new View.OnClickListener() {
+        signIN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
                 ParseUser user = new ParseUser();
                 user.setEmail(email.getText().toString());
                 user.setUsername(username.getText().toString());
                 user.setPassword(password.getText().toString());
-
-
                 user.signUpInBackground(new SignUpCallback() {
                     @Override
                     public void done(ParseException e) {
                         if (e == null) {
                             signUpMsg("Account Created Successfully");
 
-                            Intent sigin_intent  = new Intent(getApplicationContext(),LoginActivity.class);
+                            Intent sigin_intent = new Intent(getApplicationContext(), LoginActivity.class);
                             startActivity(sigin_intent);
                         } else {
                             signUpMsg("Account already taken.");
