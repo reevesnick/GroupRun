@@ -41,6 +41,8 @@ dependencies {
     compile 'com.google.android.gms:play-services-analytics:8.4.0'
     compile 'com.google.android.gms:play-services-identity:8.4.0'
     compile 'com.google.android.gms:play-services-gcm:8.4.0'
+    // Module dependency on Parse libraries sources
+    compile 'com.parse:parseui-login-android:0.0.1'
     compile 'com.parse:parsefacebookutils-v4-android:1.10.3@aar'
     compile 'com.parse:parseui-widget-android:0.0.1'
 }

@@ -9,10 +9,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseRelation;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import app.com.grouprun.R;
 
@@ -32,8 +35,6 @@ public class CompletedRunDialogFragment extends DialogFragment {
     private EditText distanceText;
     private ParseUser currentUser;
     public interface CompletedRunDialogListener{
-        public void onDialogPositiveClick(DialogFragment dialog);
-        public void onDialogNegativeClick(DialogFragment dialog);
 
     }
 
@@ -62,7 +63,6 @@ public class CompletedRunDialogFragment extends DialogFragment {
         onCancelButton();
         onSaveButton();
 
-        currentUser = ParseUser.getCurrentUser();
 
         return view;
     }
@@ -83,18 +83,31 @@ public class CompletedRunDialogFragment extends DialogFragment {
             @Override
             public void onClick(View v) {
                 getDialog().dismiss();
-
-                ParseObject run = new ParseObject("Run");
-                run.put("time",timeText.getText().toString());
+                currentUser = ParseUser.getCurrentUser();
+                final ParseObject run = new ParseObject("Run");
+                run.put("time", timeText.getText().toString());
                 run.put("distance", distanceText.getText().toString());
-                ParseRelation userRun = currentUser.getRelation("listOfRuns");
-                userRun.add(run);
-                run.saveInBackground();
+                final ParseRelation userRun = currentUser.getRelation("listOfRuns");
+                run.saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        if (e == null) {
+                            userRun.add(run);
+
+                        }
+                    }
+                });
+
                 currentUser.saveInBackground();
             }
         });
     }
 
+
+    public void onStart(){
+        super.onStart();
+        currentUser = ParseUser.getCurrentUser();
+    }
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);

@@ -120,18 +120,6 @@ public class LoginActivity extends AppCompatActivity implements FacebookCallback
         faceBookButton = (LoginButton) findViewById(R.id.facebook_login_button);
 
 
-        try {
-            PackageInfo info = getPackageManager().getPackageInfo(
-                    "app.com.grouprun",
-                    PackageManager.GET_SIGNATURES);
-            for (Signature signature : info.signatures) {
-                MessageDigest md = MessageDigest.getInstance("SHA");
-                md.update(signature.toByteArray());
-                Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-        } catch (NoSuchAlgorithmException e) {
-        }
         // Set up the login form.
         userName = (EditText) findViewById(R.id.userName);
 //        populateAutoComplete();
@@ -189,6 +177,12 @@ public class LoginActivity extends AppCompatActivity implements FacebookCallback
             }
         });
     }
+
+    public void onStart(){
+        super.onStart();
+        parseUser = ParseUser.getCurrentUser();
+
+    }
     public void getUserDetailsFromParse() {
         parseUser = ParseUser.getCurrentUser();
         Toast.makeText(LoginActivity.this, "Welcome back " + parseUser.getUsername(), Toast.LENGTH_SHORT).show();
@@ -228,6 +222,7 @@ public class LoginActivity extends AppCompatActivity implements FacebookCallback
         parseUser = ParseUser.getCurrentUser();
         parseUser.setUsername(name);
         parseUser.setEmail(email);
+
         parseUser.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
@@ -247,7 +242,7 @@ public class LoginActivity extends AppCompatActivity implements FacebookCallback
 
             @Override
             public void onClick(View v) {
-                if ("".equals(userName) || "".equals(passwordText)) {
+                if ("".equals(userName.toString()) || "".equals(passwordText.toString())) {
 //                    DISPLAY INPUT VALIDTION ERROR
                     return;
                 } else {

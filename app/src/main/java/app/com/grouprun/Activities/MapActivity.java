@@ -15,7 +15,6 @@ import android.speech.tts.TextToSpeech;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
@@ -28,7 +27,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Chronometer;
 import android.widget.TextView;
-import android.widget.Toast;
+
 import com.facebook.appevents.AppEventsLogger;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
@@ -39,13 +38,13 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
 import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
@@ -74,11 +73,13 @@ public class MapActivity extends AppCompatActivity implements
     private GoogleMap mMap;
     LocationManager userLocation;
     Location location;
-    private static double latitude = 0.0;
-    private static double longitude = 0.0;
+    private static double latitudeOnStart = 0.0;
+    private static double prevLatitude= 0.0;
+    private static double longitudeOnStart = 0.0;
+    private static double prevLongitude = 0.0;
+    double distanceTraveled =0.0;
     FButton button;
     TextToSpeech textToSpeech;
-    MapFragment googleMapFrag;
     Chronometer timeChronometer;
     Chronometer distanceChronometer;
     long time;
@@ -90,7 +91,7 @@ public class MapActivity extends AppCompatActivity implements
     private TextView name;
     private PolylineOptions mPolylineOptions; // Polyline Options Variable
     private LatLng mLatLng;
-
+    Location prevLocation;
     //private TextView milesLabel;
 
     // PubNub Publish Callback
@@ -239,9 +240,9 @@ public class MapActivity extends AppCompatActivity implements
             location = userLocation.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 
             if (location != null) {
-                latitude = location.getLatitude();
-                longitude = location.getLongitude();
-                LatLng currentLatLng = new LatLng(latitude, longitude);
+                latitudeOnStart = location.getLatitude();
+                longitudeOnStart = location.getLongitude();
+                LatLng currentLatLng = new LatLng(latitudeOnStart, longitudeOnStart);
                 //setting initial zoom
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 16));
 
@@ -271,7 +272,11 @@ public class MapActivity extends AppCompatActivity implements
     public void onLocationChanged(Location location) {
         this.location = location;
         int flag = 0;
-        LatLng prev = new LatLng(0, 0);
+        prevLocation = new Location("prev_location");
+        prevLocation.setLatitude(prevLatitude);
+        prevLocation.setLongitude(prevLongitude);
+        LatLng prev = new LatLng(prevLatitude, prevLatitude);
+
         LatLng current = new LatLng(location.getLatitude(), location.getLongitude());
 
         if (flag == 0) {
@@ -289,10 +294,13 @@ public class MapActivity extends AppCompatActivity implements
         Log.d("Location Update", "Latitude: " + location.getLatitude() +
                 " Longitude: " + location.getLongitude());
 
+
          broadcastLocation(location);
     }
 
     private void broadcastLocation(Location location) {
+        this.location= location;
+
         JSONObject message = new JSONObject();
         try {
             message.put("lat", location.getLatitude());
@@ -303,9 +311,20 @@ public class MapActivity extends AppCompatActivity implements
         }
         mPubnub.publish("MainRunning", message, publishCallback);
 
+        System.out.println("Latitude: " + location.getLatitude());
+        System.out.println("Longitude: " + location.getLongitude());
 
-        System.out.println("Latitude: " + latitude);
-        System.out.println("Longitude: " + longitude);
+
+        distanceTraveled+= location.distanceTo(prevLocation)* 0.00062137119;
+        String distance = String.format("%.2f", distanceTraveled);
+
+
+        System.out.println("Distance between locations: " + distance + " miles");
+
+        prevLatitude = location.getLatitude();
+        prevLongitude = location.getLongitude();
+
+        distanceChronometer.setText(distance);
     }
 
 
@@ -346,7 +365,7 @@ public class MapActivity extends AppCompatActivity implements
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onClick(View v) {
-
+        ParseGeoPoint currentLocation;
         String text = button.getText().toString();
         if (text.equals("Start")) {
 
@@ -355,6 +374,14 @@ public class MapActivity extends AppCompatActivity implements
             timeChronometer.start();
 
             textToSpeech.speak("Run started", TextToSpeech.QUEUE_FLUSH, null, null);
+            currentUser.put("isRunning", true);
+            currentLocation = new ParseGeoPoint(latitudeOnStart, longitudeOnStart);
+            currentUser.put("current_location", currentLocation);
+            currentUser.saveInBackground();
+            prevLatitude = currentLocation.getLatitude();
+            prevLongitude= currentLocation.getLongitude();
+
+
             button.setButtonColor(Color.RED);
             button.setText("Stop");
 
@@ -371,14 +398,17 @@ public class MapActivity extends AppCompatActivity implements
 //end
             timeChronometer.stop();
             textToSpeech.speak("Run stopped", TextToSpeech.QUEUE_FLUSH, null, null);
-
-
+            currentLocation = new ParseGeoPoint(latitudeOnStart, longitudeOnStart);
+            currentUser.put("isRunning", false);
+            currentUser.put("current_location", currentLocation);
+            currentUser.saveInBackground();
             button.setButtonColor(Color.GREEN);
             button.setText("Start");
             timeChronometer.setBase(SystemClock.elapsedRealtime());
 
-
-
+            distanceChronometer.stop();
+            distanceChronometer.setText("0.00");
+            distanceTraveled=0;
             showNoticeDialog(bundle);
 
             time = 0;
@@ -401,42 +431,7 @@ public class MapActivity extends AppCompatActivity implements
 
 
 
-    private double distance(double lat1, double lon1, double lat2, double lon2) {
-        double theta = lon1 - lon2;
-        double dist = Math.sin(deg2rad(lat1)) * Math.sin(deg2rad(lat2)) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.cos(deg2rad(theta));
-        dist = Math.acos(dist);
-        dist = rad2deg(dist);
-        dist = dist * 60 * 1.1515;
-        return (dist);
 
-    }
-
-    private double deg2rad(double deg) {
-        return (deg * Math.PI / 180.0);
-    }
-    private double rad2deg(double rad) {
-        return (rad * 180.0 / Math.PI);
-    }
-/*
-    public void distanceBetween(){
-        double startLatitude = 0;
-        double startLongitude = 0;
-        double endLatitude = 0;
-        double endLongitude = 0;
-
-
-        double R, a, c, d, dLat,dLon;
-        R=6371.00;
-        dLat = (endLatitude - startLatitude);
-        Math.toRadians(dLat);
-        dLon = (endLongitude - startLongitude);
-        Math.toRadians(dLon);
-        a = Math.sin(dLat/2.00) * Math.sin(dLat/2.00) + Math.cos(Math.toRadians(startLatitude)) * Math.cos(Math.toRadians(endLatitude)) * Math.sin(dLon/2) * Math.sin(dLat/2);
-        c =2 * Math.atan2(Math.sqrt(a), Math.sqrt(1.00-a));
-        d= R * c;
-        System.out.println("Miles: "+d);
-    }
-*/
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -477,7 +472,7 @@ public class MapActivity extends AppCompatActivity implements
         } else if (id == R.id.nav_send) {
 
         }else if(id==R.id.logout){
-            currentUser.logOut();
+            currentUser.logOutInBackground();
 
             Intent logout = new Intent(getApplicationContext(), LoginActivity.class);
             startActivity(logout);
@@ -490,7 +485,7 @@ public class MapActivity extends AppCompatActivity implements
     @Override
     public void onStart() {
         super.onStart();
-
+        currentUser = ParseUser.getCurrentUser();
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client.connect();
@@ -549,7 +544,7 @@ public class MapActivity extends AppCompatActivity implements
 
         DialogFragment dialog = new CompletedRunDialogFragment();
         dialog.setArguments(bundle);
-        dialog.show(fm,"run_completed_message");
+        dialog.show(fm, "run_completed_message");
 
 
 
@@ -559,15 +554,6 @@ public class MapActivity extends AppCompatActivity implements
 
     }
 
-    @Override
-    public void onDialogPositiveClick(DialogFragment dialogFragment) {
-            Toast.makeText(this, "Run saved!" ,Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onDialogNegativeClick(DialogFragment dialog) {
-
-    }
 
 
 }
