@@ -41,14 +41,10 @@ public class SignUpActivity extends AppCompatActivity {
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 Intent intent = new Intent(getApplicationContext(),getParent().getClass());
                 startActivity(intent);
-
             }
         });
-
-
     }
 
 
