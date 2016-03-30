@@ -1,6 +1,7 @@
 package app.com.grouprun.Activities;
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.os.Environment;
 import android.support.v4.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
@@ -25,6 +26,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Chronometer;
 import android.widget.TextView;
 
@@ -54,6 +56,19 @@ import com.pubnub.api.PubnubException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Locale;
 
 import app.com.grouprun.Fragments.CompletedRunDialogFragment;
@@ -74,10 +89,10 @@ public class MapActivity extends AppCompatActivity implements
     LocationManager userLocation;
     Location location;
     private static double latitudeOnStart = 0.0;
-    private static double prevLatitude= 0.0;
+    private static double prevLatitude = 0.0;
     private static double longitudeOnStart = 0.0;
     private static double prevLongitude = 0.0;
-    double distanceTraveled =0.0;
+    double distanceTraveled = 0.0;
     FButton button;
     TextToSpeech textToSpeech;
     Chronometer timeChronometer;
@@ -93,6 +108,16 @@ public class MapActivity extends AppCompatActivity implements
     private LatLng mLatLng;
     Location prevLocation;
     //private TextView milesLabel;
+    public String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/GroupRun";
+
+    //Calculating Location Between
+    Location location1;
+    Location location2;
+
+    //Java Socket Varibles
+    TextView info, infoip, msg;
+    String message = "";
+    ServerSocket serverSocket;
 
     // PubNub Publish Callback
     Callback publishCallback = new Callback() {
@@ -145,9 +170,13 @@ public class MapActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nav);
-        android.support.v7.widget.Toolbar  toolbar = (  android.support.v7.widget.Toolbar ) findViewById(R.id.toolbar);
+        android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        //locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        File dir = new File(path);
+        dir.mkdirs();
 
 //        currentUser = ParseUser.getCurrentUser();
 //        name.setText(currentUser.getUsername());
@@ -184,9 +213,35 @@ public class MapActivity extends AppCompatActivity implements
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        // Java Socket Layout
+
+        info = (TextView) findViewById(R.id.info);
+        infoip = (TextView) findViewById(R.id.infoip);
+        msg = (TextView) findViewById(R.id.msg);
+
+
+        infoip.setText(getIpAddress());
+
+        Thread socketServerThread = new Thread(new SocketServerThread());
+        socketServerThread.start();
 
 
     }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        if (serverSocket != null) {
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     /*
         Where all ui components are handled
      */
@@ -295,11 +350,11 @@ public class MapActivity extends AppCompatActivity implements
                 " Longitude: " + location.getLongitude());
 
 
-         broadcastLocation(location);
+        broadcastLocation(location);
     }
 
     private void broadcastLocation(Location location) {
-        this.location= location;
+        this.location = location;
 
         JSONObject message = new JSONObject();
         try {
@@ -315,7 +370,7 @@ public class MapActivity extends AppCompatActivity implements
         System.out.println("Longitude: " + location.getLongitude());
 
 
-        distanceTraveled+= location.distanceTo(prevLocation)* 0.00062137119;
+        distanceTraveled += location.distanceTo(prevLocation) * 0.00062137119;
         String distance = String.format("%.2f", distanceTraveled);
 
 
@@ -373,13 +428,18 @@ public class MapActivity extends AppCompatActivity implements
             timeChronometer.setBase(SystemClock.elapsedRealtime() + time);
             timeChronometer.start();
 
+            location1 = new Location("Start");
+            // location1.setLatitude(latitude);
+            //  location1.setLongitude(longitude);
+
+
             textToSpeech.speak("Run started", TextToSpeech.QUEUE_FLUSH, null, null);
             currentUser.put("isRunning", true);
             currentLocation = new ParseGeoPoint(latitudeOnStart, longitudeOnStart);
             currentUser.put("current_location", currentLocation);
             currentUser.saveInBackground();
             prevLatitude = currentLocation.getLatitude();
-            prevLongitude= currentLocation.getLongitude();
+            prevLongitude = currentLocation.getLongitude();
 
 
             button.setButtonColor(Color.RED);
@@ -395,6 +455,8 @@ public class MapActivity extends AppCompatActivity implements
             String timeText = String.valueOf(currentTime);
             bundle.putString("timeText", timeText);
             bundle.putString("distanceText", distanceText);
+
+            //Create a local file
 //end
             timeChronometer.stop();
             textToSpeech.speak("Run stopped", TextToSpeech.QUEUE_FLUSH, null, null);
@@ -408,7 +470,7 @@ public class MapActivity extends AppCompatActivity implements
 
             distanceChronometer.stop();
             distanceChronometer.setText("0.00");
-            distanceTraveled=0;
+            distanceTraveled = 0;
             showNoticeDialog(bundle);
 
             time = 0;
@@ -428,8 +490,6 @@ public class MapActivity extends AppCompatActivity implements
     private void updateCamera() {
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(mLatLng, 16));
     }
-
-
 
 
     @Override
@@ -453,6 +513,7 @@ public class MapActivity extends AppCompatActivity implements
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
+
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
@@ -464,20 +525,23 @@ public class MapActivity extends AppCompatActivity implements
         } else if (id == R.id.run_history) {
             Intent runViewIntent = new Intent(getApplicationContext(), RunListActivity.class);
             startActivity(runViewIntent);
-        }else if (id == R.id.nav_share) {
+        } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.music) {
-            Intent musicIntent = new Intent(getApplicationContext(),MusicActivity.class);
+            Intent musicIntent = new Intent(getApplicationContext(), MusicActivity.class);
             startActivity(musicIntent);
         } else if (id == R.id.nav_send) {
 
-        }else if(id==R.id.logout){
+        } else if (id == R.id.logout) {
             currentUser.logOutInBackground();
 
             Intent logout = new Intent(getApplicationContext(), LoginActivity.class);
             startActivity(logout);
+        } else if (id == R.id.join) {
+            Intent join = new Intent(getApplicationContext(), ClientActivity.class);
+            startActivity(join);
         }
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout); 
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -500,7 +564,7 @@ public class MapActivity extends AppCompatActivity implements
                 Uri.parse("android-app://app.com.grouprun/http/host/path")
         );
         AppIndex.AppIndexApi.start(client, viewAction);
-       // distanceBetween();
+        // distanceBetween();
     }
 
     @Override
@@ -522,6 +586,7 @@ public class MapActivity extends AppCompatActivity implements
         AppIndex.AppIndexApi.end(client, viewAction);
         client.disconnect();
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -529,6 +594,7 @@ public class MapActivity extends AppCompatActivity implements
         // Logs 'install' and 'app activate' App Events.
         AppEventsLogger.activateApp(this);
     }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -547,13 +613,136 @@ public class MapActivity extends AppCompatActivity implements
         dialog.show(fm, "run_completed_message");
 
 
-
     }
+
     @Override
     public void onFragmentInteraction(Uri uri) {
 
     }
 
+    private class SocketServerThread extends Thread {
 
+        static final int SocketServerPORT = 8080;
+        int count = 0;
 
+        @Override
+        public void run() {
+            try {
+                serverSocket = new ServerSocket(SocketServerPORT);
+                MapActivity.this.runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        info.setText("Port: "
+                                + serverSocket.getLocalPort());
+                    }
+                });
+
+                while (true) {
+                    Socket socket = serverSocket.accept();
+                    count++;
+                    message += "#" + count + " from " + socket.getInetAddress()
+                            + ":" + socket.getPort() + "\n";
+
+                    MapActivity.this.runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            msg.setText(message);
+                        }
+                    });
+
+                    SocketServerReplyThread socketServerReplyThread = new SocketServerReplyThread(
+                            socket, count);
+                    socketServerReplyThread.run();
+
+                }
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    private class SocketServerReplyThread extends Thread {
+
+        private Socket hostThreadSocket;
+        int cnt;
+
+        SocketServerReplyThread(Socket socket, int c) {
+            hostThreadSocket = socket;
+            cnt = c;
+        }
+
+        @Override
+        public void run() {
+            OutputStream outputStream;
+            String msgReply = "Hello from Android, you are #" + cnt;
+
+            try {
+                outputStream = hostThreadSocket.getOutputStream();
+                PrintStream printStream = new PrintStream(outputStream);
+                printStream.print(msgReply);
+                printStream.close();
+
+                message += "replayed: " + msgReply + "\n";
+
+                MapActivity.this.runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        msg.setText(message);
+                    }
+                });
+
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                message += "Something wrong! " + e.toString() + "\n";
+            }
+
+            MapActivity.this.runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    msg.setText(message);
+                }
+            });
+        }
+
+    }
+
+    private String getIpAddress() {
+        String ip = "";
+        try {
+            Enumeration<NetworkInterface> enumNetworkInterfaces = NetworkInterface
+                    .getNetworkInterfaces();
+            while (enumNetworkInterfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = enumNetworkInterfaces
+                        .nextElement();
+                Enumeration<InetAddress> enumInetAddress = networkInterface
+                        .getInetAddresses();
+                while (enumInetAddress.hasMoreElements()) {
+                    InetAddress inetAddress = enumInetAddress.nextElement();
+
+                    if (inetAddress.isSiteLocalAddress()) {
+                        ip += "SiteLocalAddress: "
+                                + inetAddress.getHostAddress() + "\n";
+                    }
+
+                }
+
+            }
+
+        } catch (SocketException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            ip += "Something Wrong! " + e.toString() + "\n";
+        }
+
+        return ip;
+    }
 }
+
+

@@ -17,6 +17,10 @@
             android:id="@+id/music"
             android:title="Music" />
 
+        <item
+            android:id="@+id/join"
+            android:title="Join Group" />
+
 
 
     </group>
