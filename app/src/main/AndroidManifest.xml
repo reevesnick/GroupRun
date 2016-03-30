@@ -71,6 +71,12 @@
             android:value="@string/facebook_app_id" />
 
         <activity
+            android:name=".Activities.ClientActivity"
+            android:label="@string/title_activity_nav"
+            android:parentActivityName=".Activities.MapActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
             android:name=".Activities.RunListActivity"
             android:label="@string/title_activity_nav"
             android:parentActivityName=".Activities.MapActivity"
@@ -81,6 +87,8 @@
             android:screenOrientation="portrait"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar" >
+
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
