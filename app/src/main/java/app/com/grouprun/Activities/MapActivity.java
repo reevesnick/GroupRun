@@ -215,9 +215,9 @@ public class MapActivity extends AppCompatActivity implements
 
         // Java Socket Layout
 
-        info = (TextView) findViewById(R.id.info);
-        infoip = (TextView) findViewById(R.id.infoip);
-        msg = (TextView) findViewById(R.id.msg);
+        //info = (TextView) findViewById(R.id.info);
+        //infoip = (TextView) findViewById(R.id.infoip);
+        //msg = (TextView) findViewById(R.id.msg);
 
 
         infoip.setText(getIpAddress());
@@ -540,6 +540,11 @@ public class MapActivity extends AppCompatActivity implements
         } else if (id == R.id.join) {
             Intent join = new Intent(getApplicationContext(), ClientActivity.class);
             startActivity(join);
+        }
+        else if (id == R.id.currentgroup){
+            Intent join = new Intent(getApplicationContext(), ClientActivity.class);
+            startActivity(join);
+
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
