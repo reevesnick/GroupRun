@@ -106,6 +106,13 @@
                 android:value="true"/>
         </activity>
 
+        <activity
+            android:name=".Activities.ConnectedGroupActivity"
+            android:label="@string/title_activity_nav"
+            android:parentActivityName=".Activities.MapActivity"
+            android:screenOrientation="portrait">
+
+        </activity>
 
         <activity
             android:name=".Activities.SignUpActivity"
@@ -119,6 +126,8 @@
         android:screenOrientation="portrait">
 
     </activity>
+
+
         <service
             android:name=".Activities.MusicService"
             android:enabled="true"
