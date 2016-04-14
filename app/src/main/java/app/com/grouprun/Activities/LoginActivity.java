@@ -1,53 +1,13 @@
 package app.com.grouprun.Activities;
-import com.facebook.AccessToken;
-import com.facebook.FacebookCallback;
-import com.facebook.FacebookException;
-import com.facebook.FacebookSdk;
-import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
-import com.facebook.HttpMethod;
-import com.facebook.login.widget.LoginButton;
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignInApi;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.OptionalPendingResult;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.Status;
-import com.parse.LogInCallback;
-import com.parse.ParseException;
-import com.parse.ParseFacebookUtils;
-import com.parse.ParseFile;
-import com.parse.ParseUser;
-import com.parse.SaveCallback;
-
-import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.LoaderManager.LoaderCallbacks;
-import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
-import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.Signature;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.provider.SyncStateContract;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -57,29 +17,32 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-//import com.parse.LogInCallback;
-//import com.parse.ParseException;
-//import com.parse.ParseUser;
+import com.facebook.AccessToken;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
+import com.facebook.login.widget.LoginButton;
+import com.parse.LogInCallback;
+import com.parse.ParseException;
+import com.parse.ParseFacebookUtils;
+import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
 
 import app.com.grouprun.Fragments.FacebookButtonFragment;
-import app.com.grouprun.Fragments.GoogleSignInFragment;
 import app.com.grouprun.R;
 
-import static android.Manifest.permission.READ_CONTACTS;
+//import com.parse.LogInCallback;
+//import com.parse.ParseException;
+//import com.parse.ParseUser;
 /**
  * A login screen that offers login via email/password.
  */
@@ -210,7 +173,6 @@ public class LoginActivity extends AppCompatActivity implements FacebookCallback
                             JSONObject data = picture.getJSONObject("data");
                             //  Returns a 50x50 profile picture
                             String pictureUrl = data.getString("url");
-                            new ProfilePhotoAsync(pictureUrl).execute();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -352,40 +314,6 @@ public class LoginActivity extends AppCompatActivity implements FacebookCallback
     public void onLoaderReset(Loader<Object> loader) {
 
     }
-    class ProfilePhotoAsync extends AsyncTask<String, String, String> {
-        public Bitmap bitmap;
-        String url;
-        public ProfilePhotoAsync(String url) {
-            this.url = url;
-        }
-        @Override
-        protected String doInBackground(String... params) {
-            // Fetching data from URI and storing in bitmap
-            bitmap = DownloadImageBitmap(url);
-            return null;
-        }
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-//            mProfileImage.setImageBitmap(bitmap);
-            saveNewUser(bitmap);
-        }
 
-    }
-    public static Bitmap DownloadImageBitmap(String url) {
-        Bitmap bm = null;
-        try {
-            URL aURL = new URL(url);
-            URLConnection conn = aURL.openConnection();
-            conn.connect();
-            InputStream is = conn.getInputStream();
-            BufferedInputStream bis = new BufferedInputStream(is);
-            bm = BitmapFactory.decodeStream(bis);
-            bis.close();
-            is.close();
-        } catch (IOException e) {
-            Log.e("IMAGE", "Error getting bitmap", e);
-        }
-        return bm;
-    }
+
 }

@@ -1,8 +1,7 @@
 package app.com.grouprun.Activities;
+
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.os.Environment;
-import android.support.v4.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -11,12 +10,14 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
 import android.os.SystemClock;
 import android.speech.tts.TextToSpeech;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
-import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -26,8 +27,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Chronometer;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.facebook.appevents.AppEventsLogger;
@@ -57,18 +58,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Locale;
 
 import app.com.grouprun.Fragments.CompletedRunDialogFragment;
@@ -107,6 +97,7 @@ public class MapActivity extends AppCompatActivity implements
     private PolylineOptions mPolylineOptions; // Polyline Options Variable
     private LatLng mLatLng;
     Location prevLocation;
+    private FrameLayout frameLayout;
     //private TextView milesLabel;
     public String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/GroupRun";
 
@@ -173,14 +164,15 @@ public class MapActivity extends AppCompatActivity implements
         android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        frameLayout = (FrameLayout)findViewById(R.id.frameLayout);
+
         //locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         File dir = new File(path);
         dir.mkdirs();
 
 //        currentUser = ParseUser.getCurrentUser();
-//        name.setText(currentUser.getUsername());
-//        email.setText(currentUser.getEmail());
+
 
         //Start Google Client
         this.buildGoogleApiClient();
@@ -211,19 +203,15 @@ public class MapActivity extends AppCompatActivity implements
         drawer.setDrawerListener(toggle);
         toggle.syncState();
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+
+        View headerLayout = navigationView.getHeaderView(0);
+        name = (TextView) headerLayout.findViewById(R.id.name);
+        email = (TextView) headerLayout.findViewById(R.id.email);
+
+
         navigationView.setNavigationItemSelectedListener(this);
 
-        // Java Socket Layout
 
-        info = (TextView) findViewById(R.id.info);
-        infoip = (TextView) findViewById(R.id.infoip);
-        msg = (TextView) findViewById(R.id.msg);
-
-
-        infoip.setText(getIpAddress());
-
-        Thread socketServerThread = new Thread(new SocketServerThread());
-        socketServerThread.start();
 
 
     }
@@ -233,13 +221,7 @@ public class MapActivity extends AppCompatActivity implements
     public void onDestroy() {
         super.onDestroy();
 
-        if (serverSocket != null) {
-            try {
-                serverSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+
     }
 
     /*
@@ -424,7 +406,6 @@ public class MapActivity extends AppCompatActivity implements
         String text = button.getText().toString();
         if (text.equals("Start")) {
 
-
             timeChronometer.setBase(SystemClock.elapsedRealtime() + time);
             timeChronometer.start();
 
@@ -472,6 +453,9 @@ public class MapActivity extends AppCompatActivity implements
             distanceChronometer.setText("0.00");
             distanceTraveled = 0;
             showNoticeDialog(bundle);
+
+//            Snackbar snackbar = Snackbar.make(frameLayout,"Run saved",Snackbar.LENGTH_LONG);
+//            snackbar.show();
 
             time = 0;
         }
@@ -528,8 +512,8 @@ public class MapActivity extends AppCompatActivity implements
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.music) {
-            Intent musicIntent = new Intent(getApplicationContext(), MusicActivity.class);
-            startActivity(musicIntent);
+//            Intent musicIntent = new Intent(getApplicationContext(), MusicActivity.class);
+//            startActivity(musicIntent);
         } else if (id == R.id.nav_send) {
 
         } else if (id == R.id.logout) {
@@ -538,7 +522,7 @@ public class MapActivity extends AppCompatActivity implements
             Intent logout = new Intent(getApplicationContext(), LoginActivity.class);
             startActivity(logout);
         } else if (id == R.id.join) {
-            Intent join = new Intent(getApplicationContext(), ClientActivity.class);
+            Intent join = new Intent(getApplicationContext(), ListActivity.class);
             startActivity(join);
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -550,6 +534,13 @@ public class MapActivity extends AppCompatActivity implements
     public void onStart() {
         super.onStart();
         currentUser = ParseUser.getCurrentUser();
+
+        if (currentUser!=null){
+            name.setText(currentUser.getUsername());
+            email.setText(currentUser.getEmail());
+
+        }
+
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client.connect();
@@ -620,129 +611,9 @@ public class MapActivity extends AppCompatActivity implements
 
     }
 
-    private class SocketServerThread extends Thread {
 
-        static final int SocketServerPORT = 8080;
-        int count = 0;
 
-        @Override
-        public void run() {
-            try {
-                serverSocket = new ServerSocket(SocketServerPORT);
-                MapActivity.this.runOnUiThread(new Runnable() {
 
-                    @Override
-                    public void run() {
-                        info.setText("Port: "
-                                + serverSocket.getLocalPort());
-                    }
-                });
-
-                while (true) {
-                    Socket socket = serverSocket.accept();
-                    count++;
-                    message += "#" + count + " from " + socket.getInetAddress()
-                            + ":" + socket.getPort() + "\n";
-
-                    MapActivity.this.runOnUiThread(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            msg.setText(message);
-                        }
-                    });
-
-                    SocketServerReplyThread socketServerReplyThread = new SocketServerReplyThread(
-                            socket, count);
-                    socketServerReplyThread.run();
-
-                }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-
-    }
-
-    private class SocketServerReplyThread extends Thread {
-
-        private Socket hostThreadSocket;
-        int cnt;
-
-        SocketServerReplyThread(Socket socket, int c) {
-            hostThreadSocket = socket;
-            cnt = c;
-        }
-
-        @Override
-        public void run() {
-            OutputStream outputStream;
-            String msgReply = "Hello from Android, you are #" + cnt;
-
-            try {
-                outputStream = hostThreadSocket.getOutputStream();
-                PrintStream printStream = new PrintStream(outputStream);
-                printStream.print(msgReply);
-                printStream.close();
-
-                message += "replayed: " + msgReply + "\n";
-
-                MapActivity.this.runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        msg.setText(message);
-                    }
-                });
-
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                message += "Something wrong! " + e.toString() + "\n";
-            }
-
-            MapActivity.this.runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    msg.setText(message);
-                }
-            });
-        }
-
-    }
-
-    private String getIpAddress() {
-        String ip = "";
-        try {
-            Enumeration<NetworkInterface> enumNetworkInterfaces = NetworkInterface
-                    .getNetworkInterfaces();
-            while (enumNetworkInterfaces.hasMoreElements()) {
-                NetworkInterface networkInterface = enumNetworkInterfaces
-                        .nextElement();
-                Enumeration<InetAddress> enumInetAddress = networkInterface
-                        .getInetAddresses();
-                while (enumInetAddress.hasMoreElements()) {
-                    InetAddress inetAddress = enumInetAddress.nextElement();
-
-                    if (inetAddress.isSiteLocalAddress()) {
-                        ip += "SiteLocalAddress: "
-                                + inetAddress.getHostAddress() + "\n";
-                    }
-
-                }
-
-            }
-
-        } catch (SocketException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            ip += "Something Wrong! " + e.toString() + "\n";
-        }
-
-        return ip;
-    }
 }
 
 
