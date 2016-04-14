@@ -50,6 +50,9 @@ public class ListActivity extends ActionBarActivity implements DeviceListFragmen
             startActivityForResult(enableBT, REQUEST_BLUETOOTH);
         }
 
+         makeDiscoverable();
+
+
         FragmentManager fragmentManager = getSupportFragmentManager();
 
         mDeviceListFragment = DeviceListFragment.newInstance(BTAdapter);
@@ -81,6 +84,15 @@ public class ListActivity extends ActionBarActivity implements DeviceListFragmen
 
     @Override
     public void onFragmentInteraction(String id) {
+
+    }
+
+    public void makeDiscoverable(){
+
+        Intent discoverableIntent = new
+                Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+        startActivity(discoverableIntent);
 
     }
 }
