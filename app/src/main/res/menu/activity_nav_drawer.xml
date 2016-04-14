@@ -21,6 +21,9 @@
             android:id="@+id/join"
             android:title="Join Group" />
 
+        <item
+            android:id="@+id/currentgroup"
+            android:title="Check Current Group" />
 
 
     </group>
