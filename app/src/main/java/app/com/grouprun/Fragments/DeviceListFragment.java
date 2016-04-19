@@ -45,7 +45,8 @@ public class DeviceListFragment extends Fragment implements AbsListView.OnItemCl
     private OnFragmentInteractionListener mListener;
     private static BluetoothAdapter bTAdapter;
     private BluetoothDevice bluetoothDevice;
-
+    private final String MY_UUID = "ef6e94f8-698f-4494-8470-d48b741cde81";
+    UUID mUUID = UUID.fromString(MY_UUID);
     /**
      * The fragment's ListView/GridView.
      */
@@ -159,6 +160,12 @@ public class DeviceListFragment extends Fragment implements AbsListView.OnItemCl
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
@@ -176,19 +183,23 @@ public class DeviceListFragment extends Fragment implements AbsListView.OnItemCl
             // fragment is attached to one) that an item has been selected.
             mListener.onFragmentInteraction(deviceItemList.get(position).getDeviceName());
 
-          bluetoothDevice = bTAdapter.getRemoteDevice(deviceItemList.get(position).getAddress());
-
+            bluetoothDevice = bTAdapter.getRemoteDevice(deviceItemList.get(position).getAddress());
             ConnectThread connectThread = new ConnectThread();
-            UUID mUUID = UUID.randomUUID();
+
+            connectThread.connect(bTAdapter, bluetoothDevice, mUUID);
+            connectThread.start();
+
             ServerConnectThread serverConnectThread = new ServerConnectThread();
+            serverConnectThread.acceptConnect(bTAdapter, mUUID);
+            serverConnectThread.start();
 
 
-            serverConnectThread.acceptConnect(bTAdapter,mUUID);
-            boolean connected = connectThread.connect(bluetoothDevice, mUUID);
-//            Log.v("CONNECTED?",connected?"Connect":"NOT Connected");
+
+
+
+
 
         }
-
     }
 
     /**
