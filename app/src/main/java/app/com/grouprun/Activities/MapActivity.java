@@ -525,7 +525,11 @@ public class MapActivity extends AppCompatActivity implements
             Intent join = new Intent(getApplicationContext(), ListActivity.class);
             startActivity(join);
         }
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        else if (id == R.id.currentgroup) {
+            Intent curjoin = new Intent(getApplicationContext(), ListActivity.class);
+            startActivity(curjoin);
+        }
+            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
