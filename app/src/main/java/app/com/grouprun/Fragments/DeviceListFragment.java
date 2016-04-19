@@ -162,6 +162,9 @@ public class DeviceListFragment extends Fragment implements AbsListView.OnItemCl
     @Override
     public void onStart() {
         super.onStart();
+        ServerConnectThread serverConnectThread = new ServerConnectThread();
+        serverConnectThread.acceptConnect(bTAdapter, mUUID);
+        serverConnectThread.start();
 
     }
 
@@ -185,13 +188,9 @@ public class DeviceListFragment extends Fragment implements AbsListView.OnItemCl
 
             bluetoothDevice = bTAdapter.getRemoteDevice(deviceItemList.get(position).getAddress());
             ConnectThread connectThread = new ConnectThread();
-
             connectThread.connect(bTAdapter, bluetoothDevice, mUUID);
             connectThread.start();
 
-            ServerConnectThread serverConnectThread = new ServerConnectThread();
-            serverConnectThread.acceptConnect(bTAdapter, mUUID);
-            serverConnectThread.start();
 
 
 
