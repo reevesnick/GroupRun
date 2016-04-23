@@ -63,6 +63,7 @@ import java.util.Locale;
 
 import app.com.grouprun.Fragments.CompletedRunDialogFragment;
 import app.com.grouprun.R;
+import inSync.BluetoothChat;
 import info.hoang8f.widget.FButton;
 
 public class MapActivity extends AppCompatActivity implements
@@ -512,8 +513,8 @@ public class MapActivity extends AppCompatActivity implements
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.music) {
-//            Intent musicIntent = new Intent(getApplicationContext(), MusicActivity.class);
-//            startActivity(musicIntent);
+            Intent musicIntent = new Intent(getApplicationContext(), BluetoothChat.class);
+            startActivity(musicIntent);
         } else if (id == R.id.nav_send) {
 
         } else if (id == R.id.logout) {

@@ -1,5 +1,6 @@
 package app.com.grouprun.Connecting;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
@@ -14,7 +15,7 @@ public class ConnectThread extends Thread {
 
     private BluetoothSocket bTSocket;
 
-    public boolean connect(BluetoothDevice bTDevice, UUID mUUID) {
+    public boolean connect(BluetoothAdapter bTAdapter, BluetoothDevice bTDevice, UUID mUUID) {
         try {
             bTSocket = bTDevice.createRfcommSocketToServiceRecord(mUUID);
             bTSocket.connect();
