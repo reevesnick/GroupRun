@@ -32,6 +32,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -57,7 +58,7 @@ import app.com.grouprun.R;
 /**
  * This is the main Activity that displays the current chat session.
  */
-public class BluetoothChat extends Activity {
+public class BluetoothChat extends AppCompatActivity {
 	String globalPath = "";
 	int globalSeek = 0;
 
@@ -97,6 +98,12 @@ public class BluetoothChat extends Activity {
 	private Button help;
 	private ImageView overlay;
 
+	//Button
+	private Button musicSearchButton;
+	private Button discoverableButton;
+	private Button deviceConnectButton;
+	private Button sendButtonMusic;
+
 	// Name of the connected device
 	private String mConnectedDeviceName = null;
 	// Array adapter for the conversation thread
@@ -118,6 +125,8 @@ public class BluetoothChat extends Activity {
 
 		// Set up the window layout
 		setContentView(R.layout.main);
+
+
 
 		// Get local Bluetooth adapter
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -141,9 +150,9 @@ public class BluetoothChat extends Activity {
 		help = (Button) findViewById(R.id.button1);
 		//temp
 		help.setVisibility(View.INVISIBLE);
-		overlay = (ImageView) findViewById(R.id.overlay);
-		overlay.setVisibility(View.INVISIBLE);
-		help.setOnClickListener(new OnClickListener() {
+		//overlay = (ImageView) findViewById(R.id.overlay);
+		//overlay.setVisibility(View.INVISIBLE);
+		/*help.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				if (overlay.getVisibility() == View.INVISIBLE) {
 					overlay.setVisibility(View.VISIBLE);
@@ -151,6 +160,18 @@ public class BluetoothChat extends Activity {
 					overlay.setVisibility(View.INVISIBLE);
 			}
 		});
+*/
+		deviceConnectButton = (Button)findViewById(R.id.findDevicesButton);
+	/*	deviceConnectButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				//Intent serverIntent = null;
+
+				Intent serverIntent = new Intent(this, DeviceListActivity.class);
+				startActivityForResult(serverIntent,
+						REQUEST_CONNECT_DEVICE_INSECURE);
+			}
+		});*/
 
 	}
 
@@ -582,6 +603,7 @@ public class BluetoothChat extends Activity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.option_menu, menu);
 		return true;

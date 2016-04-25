@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import app.com.grouprun.R;
 
+
 public class AboutScreen extends Activity {
 
 	@Override
